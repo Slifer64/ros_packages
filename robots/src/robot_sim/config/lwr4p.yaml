@@ -1,0 +1,7 @@
+/lwr4p_robot/robot_description_name: "/robot_description"
+/lwr4p_robot/base_frame: "lwr_arm_base_link"
+/lwr4p_robot/tool_frame: "lwr_arm_7_link"
+/lwr4p_robot/ctrl_cycle: 0.005
+/lwr4p_robot/check_limits: true
+/lwr4p_robot/check_singularity: true
+/lwr4p_robot/wrench_topic: "/wrench"

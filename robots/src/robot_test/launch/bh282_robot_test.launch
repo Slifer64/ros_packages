@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="robot_config" default="$(find robot_test)/config/bh282_robot_sim.yaml" />
+
+  <rosparam command="load" file="$(arg robot_config)" />
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find bhand)/urdf/bh282_robot.xacro'" />
+
+  <include file="$(find bhand)/launch/common.launch" />
+
+  <node name="bh282_robot_test_node"
+        pkg="robot_test"
+        type="bh282_robot_test"
+        required="true" respawn="false" cwd="node" output="screen">
+
+        <rosparam>
+          <!--  pack, finger1, finger2, finger3 -->
+          q1: [ 2.1,    1.2,     1.8,     1.5]
+          q2: [ 0.0,    0.2,    0.15,     0.2]
+          time_duration: 1.5 <!-- duration to move from q1 to q2 and vice versa -->
+          use_sim: false
+        </rosparam>
+
+  </node>
+
+</launch>
