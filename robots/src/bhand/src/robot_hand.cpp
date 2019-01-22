@@ -68,7 +68,7 @@ std::string RobotHand::getErrMsg() const
 void RobotHand::update()
 {
   updateState(); // update state
-  publishState(); // publish joint state
+  if (getMode() != bhand_::FREEDRIVE) publishState(); // publish joint state
   waitNextCycle(); // wait for timecycle to complete
 }
 

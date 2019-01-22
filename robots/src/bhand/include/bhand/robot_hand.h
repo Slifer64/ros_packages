@@ -55,9 +55,9 @@ public:
 protected:
   void getChainFingerInd(bhand_::JointName jn, int &chain_ind, int &joint_ind) const;
   void init();
-  void waitNextCycle();
   void updateState();
   void publishState();
+  void waitNextCycle();
 
   unsigned long update_time;
   bhand_::Timer timer;

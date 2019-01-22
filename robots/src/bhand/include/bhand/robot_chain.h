@@ -107,8 +107,8 @@ protected:
   std::string tool_link_name;
 
   double ctrl_cycle;
-  arma::vec joint_pos;
   arma::vec joint_prev_pos;
+  arma::vec joint_pos;
   arma::vec joint_vel;
   arma::vec joint_torques;
   arma::mat pose;

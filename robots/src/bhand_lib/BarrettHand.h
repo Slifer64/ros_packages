@@ -24,10 +24,7 @@ public:
   enum Mode
   {
     IDLE,
-    JOINT_POS_CONTROL,
-    JOINT_VEL_CONTROL,
-    FREEDRIVE,
-    PROTECTIVE_STOP
+    JOINT_VEL_CONTROL
   };
 
   BarrettHand();
@@ -50,6 +47,8 @@ public:
 
   void setFingerVelocity(int vel, int i);
   void setFingerPosition(double pos, int i);
+
+  void setMode(const Mode &m);
 
 private:
 

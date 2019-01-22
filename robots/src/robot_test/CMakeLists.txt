@@ -62,5 +62,21 @@ target_link_libraries(bh282_robot_test
   ${catkin_LIBRARIES}
 )
 
+# +++++++++++++++++++++++++++++++++++++++
+add_executable(stop_barrett
+  src/stop_barrett.cpp
+)
+
+add_dependencies(stop_barrett
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(stop_barrett
+  armadillo
+  bhand
+  ${catkin_LIBRARIES}
+)
+
 # ===================================
 # ===================================

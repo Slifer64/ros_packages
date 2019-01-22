@@ -16,9 +16,9 @@
 
         <rosparam>
           <!--  pack, finger1, finger2, finger3 -->
-          q1: [ 2.1,    1.2,     1.8,     1.5]
-          q2: [ 0.0,    0.2,    0.15,     0.2]
-          time_duration: 1.5 <!-- duration to move from q1 to q2 and vice versa -->
+          q1: [ 1.1,    1.5,     1.4,     1.7]
+          q2: [ 0.0,    0.1,     0.2,     0.1]
+          time_duration: 2.5 <!-- duration to move from q1 to q2 and vice versa -->
           use_sim: false
         </rosparam>
 

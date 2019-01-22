@@ -3,11 +3,17 @@
 
 #include "BHand.h"
 #include "BHandAppHelper.h"
+#include <bhand/utils.h>
 
 class BhandHWInterface: public BHand
 {
-
 public:
+  enum Mode
+  {
+    IDLE,
+    JOINT_VEL_CONTROL
+  };
+
   BhandHWInterface();
   ~BhandHWInterface();
 
@@ -26,6 +32,11 @@ public:
   int command(const char *send, char *receive = 0);
   void set_param(const char *motor, const char *propertyName, int value);
   void get_param(const char *motor, const char *propertyName, int *result);
+
+  double getJointPosition(int i);
+  void setJointVelocity(double vel, int i);
+
+  void setMode(const BhandHWInterface::Mode &m);
 
 private:
 
@@ -50,6 +61,16 @@ private:
 	int control_velocity_coefficient;           // LCVC: Loop Control Velocity Coefficient
 	int feedback_velocity_coefficient;          // LFVC: Loop Feedback Velocity Coefficient
 	int feedback_delta_position_coefficient;    // LFDPC: Loop Feedback Delta Position Coefficient
+
+  std::vector<std::pair<double, double>> joint_limit;
+  std::vector<std::pair<int, int>> joint_limit_ticks;
+
+  Mode mode;
+
+  double ticks2rad(int i, int ticks) const;
+  int rad2ticks(int i, double rads) const;
+  int radPerSec2ticksPerMs(int i, double rad_per_sec) const;
+  double getNewtonMetersFromSgValue(int sg_value) const;
 };
 
 #endif // BHAND_HARDWARE_INTERFACE_H

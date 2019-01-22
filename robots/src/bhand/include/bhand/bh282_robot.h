@@ -17,9 +17,21 @@ public:
   Bh282Robot(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link,
     double ctrl_cycle, bool check_limits, bool check_singularity, const std::string &pub_state_topic, const std::vector<std::string> &wrench_topic):
     RobotHand(urdf_model, base_link, tool_link, ctrl_cycle, check_limits, check_singularity, pub_state_topic, wrench_topic) {}
+  ~Bh282Robot();
+
+  void update();
+  void setMode(const bhand_::Mode &m);
+
+  void setJointPosition(double pos, bhand_::JointName jn);
+  void setJointVelocity(double vel, bhand_::JointName jn);
 
 private:
   BhandHWInterface hw_i;
+
+  arma::vec getActualPosition();
+  void checkJointPosDeviationError();
+
+  double k_click;
 };
 
 }; // namespace bhand_

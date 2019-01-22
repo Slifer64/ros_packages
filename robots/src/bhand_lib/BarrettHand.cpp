@@ -45,6 +45,18 @@ BarrettHand::Mode BarrettHand::getMode() const
 
 void BarrettHand::setMode(const BarrettHand::Mode &m)
 {
+  if (mode == m) return;
+
+  switch (m)
+  {
+    case IDLE:
+      set_param("123S", "MODE", 0);
+    case JOINT_VEL_CONTROL:
+      set_param("123S", "TSTOP", 0);
+      set_param("123S", "HSG", 10000);
+      set_param("123S", "MODE", 4);
+  }
+
   mode = m;
 }
 
@@ -173,18 +185,6 @@ void BarrettHand::setFingerPosition(double pos, int i)
   if (err) errorHandler(err);
 }
 
-void BarrettHand::set_max_min_pos()
-{
-  joint_limits_ticks.push_back(std::pair<int, int>(0, 35939)); // spread
-  joint_limits_ticks.push_back(std::pair<int, int>(6, 195100)); // finger 1
-  joint_limits_ticks.push_back(std::pair<int, int>(3, 195250)); // finger 2
-  joint_limits_ticks.push_back(std::pair<int, int>(12, 194900)); // finger 3
-
-  joint_limits.push_back(std::pair<double, double>(0.0, 0.0));
-  joint_limits.push_back(std::pair<double, double>(0.0, 2.44)); // finger 1
-  joint_limits.push_back(std::pair<double, double>(0.0, 2.44)); // finger 2
-  joint_limits.push_back(std::pair<double, double>(0.0, 2.44)); // finger 3
-}
 
 // Sets RealTime control proportional gain for the desired motor.
 void BarrettHand::setFingerGain(int gain, int i)
@@ -218,15 +218,7 @@ void BarrettHand::errorHandler(int err)
 
 }
 
-double BarrettHand::ticks2rad(int i, int ticks) const
-{
-  return joint_limits[i].first + (ticks - joint_limits_ticks[i].first)*(joint_limits[i].second - joint_limits[i].first)/(double)(joint_limits_ticks[i].second - joint_limits_ticks[i].first);
-}
 
-int BarrettHand::rads2ticks(int i, double rads) const
-{
-  return 0.5 + joint_limits_ticks[i].first + (rads - joint_limits[i].first)*(joint_limits_ticks[i].second - joint_limits_ticks[i].first)/(joint_limits[i].second - joint_limits[i].first);
-}
 
 double BarrettHand::getNewtonMetersFromSgValue(int sg_value) const
 {

@@ -4,7 +4,17 @@
 
 BhandHWInterface::BhandHWInterface()
 {
+	joint_limit_ticks.push_back(std::pair<int, int>(0, 35939));  // spread
+  joint_limit_ticks.push_back(std::pair<int, int>(0, 195100)); // finger 1
+  joint_limit_ticks.push_back(std::pair<int, int>(0, 195250)); // finger 2
+  joint_limit_ticks.push_back(std::pair<int, int>(0, 194900)); // finger 3
 
+  joint_limit.push_back(std::pair<double, double>(0.0, 3.14)); // spread
+  joint_limit.push_back(std::pair<double, double>(0.0, 2.44)); // finger 1
+  joint_limit.push_back(std::pair<double, double>(0.0, 2.44)); // finger 2
+  joint_limit.push_back(std::pair<double, double>(0.0, 2.44)); // finger 3
+
+	mode = IDLE;
 }
 
 BhandHWInterface::~BhandHWInterface()
@@ -54,6 +64,24 @@ void BhandHWInterface::initialize(const std::string &handType, bool rt_control_e
 	if (rt_control_enable) enableRTControl();
 }
 
+void BhandHWInterface::setMode(const BhandHWInterface::Mode &m)
+{
+  if (mode == m) return;
+
+  switch (m)
+  {
+    case BhandHWInterface::IDLE:
+			for (int i=0;i<4;i++) setJointVelocity(0.0, i);
+      set_param("123S", "MODE", 0);
+    case BhandHWInterface::JOINT_VEL_CONTROL:
+      set_param("123S", "TSTOP", 0);
+      set_param("123S", "HSG", 10000);
+      set_param("123S", "MODE", 4);
+  }
+
+  mode = m;
+}
+
 int BhandHWInterface::command(const char *send, char *receive)
 {
 	return Command(send, receive);
@@ -63,7 +91,9 @@ int BhandHWInterface::command(const char *send, char *receive)
 void BhandHWInterface::terminate()
 {
 	RTAbort();
-	StopMotor("123S");
+	// StopMotor("123S");
+	set_param("123S", "MODE", 0);
+	terminate();
 	initialized = RT_control_enabled = false;
 }
 
@@ -165,4 +195,68 @@ void BhandHWInterface::get_param(const char *motor, const char *propertyName, in
 		printErrorMessage(buf, err);
 		throw std::runtime_error(buf);
 	}
+}
+
+double BhandHWInterface::ticks2rad(int i, int ticks) const
+{
+  return joint_limit[i].first + (ticks - joint_limit_ticks[i].first)*(joint_limit[i].second - joint_limit[i].first)/(double)(joint_limit_ticks[i].second - joint_limit_ticks[i].first);
+}
+
+int BhandHWInterface::radPerSec2ticksPerMs(int i, double rad_per_sec) const
+{
+	double ticks_range = static_cast<double>(joint_limit_ticks[i].second - joint_limit_ticks[i].first);
+  double rad_range = static_cast<double>(joint_limit[i].second - joint_limit[i].first);
+  return (rad_per_sec * ticks_range / rad_range) / 1000.0;
+}
+
+int BhandHWInterface::rad2ticks(int i, double rads) const
+{
+  return 0.5 + joint_limit_ticks[i].first + (rads - joint_limit[i].first)*(joint_limit_ticks[i].second - joint_limit_ticks[i].first)/(joint_limit[i].second - joint_limit[i].first);
+}
+
+double BhandHWInterface::getNewtonMetersFromSgValue(int sg_value) const
+{
+  // double max_tip_torque = 40 * 0.06;  // 5kg of max tip force with 6cm distal link size
+  // double min_tip_torque = -40 * 0.06;  // -5kg of min tip force with 6cm distal link size
+  // double min_sg = 0;
+  // double max_sg = 255;
+	//
+  // double sg_perc = (static_cast<double>(sg_value) + min_sg) / (max_sg - min_sg);
+  // return sg_perc * (max_tip_torque - min_tip_torque) + min_tip_torque ;
+
+	double p1 = 2.754e-10;
+  double p2 = -1.708e-06;
+  double p3 = 0.003764;
+  double p4 = -2.85;
+
+	return p1*std::pow(sg_value,3) + p2*std::pow(sg_value,2) + p3*sg_value + p4;
+}
+
+double BhandHWInterface::getJointPosition(int i)
+{
+  // Check if the feedback position flag is set
+  // if (!feedback_position_flag)
+  //   throw std::runtime_error("Error: BarrettHand: getFingerPosition: The loop feedback absolute position (LFAP) flag must be set to receive absolute position feedback.");
+
+	int pos_ticks;
+
+  if (i == 0) pos_ticks = RTGetPosition('4'); // spread joint
+	else pos_ticks = RTGetPosition(i + '0');
+
+	return ticks2rad(i, pos_ticks);
+}
+
+void BhandHWInterface::setJointVelocity(double vel, int i)
+{
+  int err;
+  // Check if the feedback position flag is set
+  // if (!control_velocity_flag)
+	// 	throw std::runtime_error("Error: BarrettHand: setFingerVelocity: The loop control velocity (LCV) flag must be set to send velocity references to the hand.");
+
+	int tick_vel = radPerSec2ticksPerMs(i,vel);
+
+  if (i == 0) err = RTSetVelocity('4', tick_vel);
+  else  err = RTSetVelocity(i + '0', tick_vel);
+
+  //if (err) errorHandler(err);
 }
