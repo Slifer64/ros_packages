@@ -173,11 +173,13 @@ int main(int argc, char **argv)
   // ===========   Set Joints trajectory  =================
   jointsTrajectory(q1, time_duration);
 
-  // // ===========   Joint Position Control  ================
-  jointPositionControl(q2, time_duration);
+  // ===========   Joint Position Control  ================
+  // jointsTrajectory(q2, time_duration);
+  // jointPositionControl(q2, time_duration);
 
   // ===========   Joint Velocity Control  ================
-  jointVelocityControl(q1, time_duration);
+  // jointsTrajectory(q1, time_duration);
+  // jointVelocityControl(q1, time_duration);
 
   // ===========   FREEDIRVE  ================
   freedrive();

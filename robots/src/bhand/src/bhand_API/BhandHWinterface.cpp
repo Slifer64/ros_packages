@@ -14,6 +14,11 @@ BhandHWInterface::BhandHWInterface()
   joint_limit.push_back(std::pair<double, double>(0.0, 2.44)); // finger 2
   joint_limit.push_back(std::pair<double, double>(0.0, 2.44)); // finger 3
 
+	sg_dead_zone[0] = 6;
+	sg_dead_zone[1] = 6;
+	sg_dead_zone[2] = 6;
+	sg_dead_zone[3] = 6;
+
 	mode = IDLE;
 }
 
@@ -62,16 +67,37 @@ void BhandHWInterface::initialize(const std::string &handType, bool rt_control_e
 	initialized = true;
 
 	if (rt_control_enable) enableRTControl();
+
+	initSgOffsets();
+}
+
+void BhandHWInterface::initSgOffsets()
+{
+	int N_msr = 30;
+
+	for (int i=0; i<4; i++) sg_offset[i] = 0;
+
+	for (int i=0; i<N_msr; i++)
+	{
+		RTUpdate();
+		sg_offset[0] += RTGetStrain('S');
+		sg_offset[1] += RTGetStrain('0' + 1);
+		sg_offset[2] += RTGetStrain('0' + 2);
+		sg_offset[3] += RTGetStrain('0' + 3);
+	}
+
+	for (int i=0; i<4; i++) sg_offset[i] = (sg_offset[i] + 0.5) / N_msr;
 }
 
 void BhandHWInterface::setMode(const BhandHWInterface::Mode &m)
 {
-  if (mode == m) return;
+  //if (mode == m) return;
+
+	stop();
 
   switch (m)
   {
     case BhandHWInterface::IDLE:
-			for (int i=0;i<4;i++) setJointVelocity(0.0, i);
       set_param("123S", "MODE", 0);
     case BhandHWInterface::JOINT_VEL_CONTROL:
       set_param("123S", "TSTOP", 0);
@@ -80,6 +106,14 @@ void BhandHWInterface::setMode(const BhandHWInterface::Mode &m)
   }
 
   mode = m;
+}
+
+void BhandHWInterface::stop()
+{
+	set_param("123S", "TSTOP", 0);
+	set_param("123S", "HSG", 10000);
+	set_param("123S", "MODE", 4);
+	for (int i=0;i<4;i++) setJointVelocity(0.0, i);
 }
 
 int BhandHWInterface::command(const char *send, char *receive)
@@ -214,22 +248,22 @@ int BhandHWInterface::rad2ticks(int i, double rads) const
   return 0.5 + joint_limit_ticks[i].first + (rads - joint_limit[i].first)*(joint_limit_ticks[i].second - joint_limit_ticks[i].first)/(joint_limit[i].second - joint_limit[i].first);
 }
 
-double BhandHWInterface::getNewtonMetersFromSgValue(int sg_value) const
+double BhandHWInterface::sg2Nm(int sg_value) const
 {
-  // double max_tip_torque = 40 * 0.06;  // 5kg of max tip force with 6cm distal link size
-  // double min_tip_torque = -40 * 0.06;  // -5kg of min tip force with 6cm distal link size
-  // double min_sg = 0;
-  // double max_sg = 255;
+  double max_tip_torque = 40 * 0.06;  // 4kg of max tip force with 6cm distal link size
+  double min_tip_torque = -40 * 0.06;  // -4kg of min tip force with 6cm distal link size
+  double min_sg = -90;
+  double max_sg = 90;
+
+  double sg_perc = (static_cast<double>(sg_value) - min_sg) / (max_sg - min_sg);
+  return sg_perc * (max_tip_torque - min_tip_torque) + min_tip_torque ;
+
+	// double p1 = 2.754e-10;
+  // double p2 = -1.708e-06;
+  // double p3 = 0.003764;
+  // double p4 = -2.85;
 	//
-  // double sg_perc = (static_cast<double>(sg_value) + min_sg) / (max_sg - min_sg);
-  // return sg_perc * (max_tip_torque - min_tip_torque) + min_tip_torque ;
-
-	double p1 = 2.754e-10;
-  double p2 = -1.708e-06;
-  double p3 = 0.003764;
-  double p4 = -2.85;
-
-	return p1*std::pow(sg_value,3) + p2*std::pow(sg_value,2) + p3*sg_value + p4;
+	// return p1*std::pow(sg_value,3) + p2*std::pow(sg_value,2) + p3*sg_value + p4;
 }
 
 double BhandHWInterface::getJointPosition(int i)
@@ -259,4 +293,24 @@ void BhandHWInterface::setJointVelocity(double vel, int i)
   else  err = RTSetVelocity(i + '0', tick_vel);
 
   //if (err) errorHandler(err);
+}
+
+double BhandHWInterface::getJointTorque(int i)
+{
+  // Check if the feedback position flag is set
+  // if (!feedback_strain_flag)
+  //   throw std::runtime_error("Error: BarrettHand: getFingerForce: The loop feedback strain (LFS) flag must be set to receive strain gauge feedback.");
+
+	int sg_value;
+  if (i == 0) sg_value = RTGetStrain('S');
+  else sg_value = RTGetStrain(i + '0');
+	sg_value -= sg_offset[i];
+
+	int sg_sign = 2*(sg_value >= 0) - 1; // get sign
+	int sg2 = sg_value - sg_sign*sg_dead_zone[i]; // subtract/add acoording to sign
+	if (sg2*sg_sign < 0) sg2 = 0; // if sign was inverted set to zero
+
+	// std::cerr << "sg_value = " << sg2 << "\n";
+
+	return sg2Nm(sg2);
 }

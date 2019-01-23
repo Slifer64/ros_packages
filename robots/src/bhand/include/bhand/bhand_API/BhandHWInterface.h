@@ -34,11 +34,19 @@ public:
   void get_param(const char *motor, const char *propertyName, int *result);
 
   double getJointPosition(int i);
+  double getJointTorque(int i);
   void setJointVelocity(double vel, int i);
 
   void setMode(const BhandHWInterface::Mode &m);
 
+  void stop();
+
 private:
+
+  void initSgOffsets();
+
+  int sg_offset[4];
+  int sg_dead_zone[4];
 
   bool initialized;
   bool RT_control_enabled;
@@ -70,7 +78,7 @@ private:
   double ticks2rad(int i, int ticks) const;
   int rad2ticks(int i, double rads) const;
   int radPerSec2ticksPerMs(int i, double rad_per_sec) const;
-  double getNewtonMetersFromSgValue(int sg_value) const;
+  double sg2Nm(int sg_value) const;
 };
 
 #endif // BHAND_HARDWARE_INTERFACE_H

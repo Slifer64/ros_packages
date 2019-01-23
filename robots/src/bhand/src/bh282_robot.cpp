@@ -60,9 +60,9 @@ Bh282Robot::Bh282Robot()
     throw std::ios_base::failure("Couldn't load urdf model from \"" + robot_description_name + "\"...\n");
   }
 
-  init();
-
   hw_i.initialize("BH8-280", true);
+
+  init();
 
   k_click = 10.0;
 }
@@ -77,6 +77,8 @@ void Bh282Robot::update()
   hw_i.RTUpdate();
 
   checkJointPosDeviationError();
+
+  if (getMode() == bhand_::FREEDRIVE) updateFreedrive();
 
   updateState(); // update the state
 
@@ -99,12 +101,15 @@ void Bh282Robot::setMode(const bhand_::Mode &m)
   }
   mode = m;
 
-  if (mode==bhand_::IDLE || mode==bhand_::FREEDRIVE)
+  if (mode==bhand_::IDLE)
   {
-    if (mode == bhand_::FREEDRIVE) std::cerr << "===========> FREEDRIVE ================\n";
     hw_i.setMode(BhandHWInterface::IDLE);
   }
-
+  else if (mode==bhand_::FREEDRIVE)
+  {
+    initFreedrive();
+    hw_i.setMode(BhandHWInterface::JOINT_VEL_CONTROL);
+  }
   else hw_i.setMode(BhandHWInterface::JOINT_VEL_CONTROL);
 }
 
@@ -138,7 +143,7 @@ void Bh282Robot::setJointVelocity(double vel, bhand_::JointName jn)
 
   arma::vec j_vel = arma::vec().zeros(fingers[chain_ind]->getNumJoints());
   j_vel(joint_ind) = vel;
-  fingers[chain_ind]->setJointVelocity(j_vel);
+  fingers[chain_ind]->setJointVelocityHelper(j_vel);
   if (!fingers[chain_ind]->isOk()) setMode(bhand_::PROTECTIVE_STOP);
   else
   {
@@ -169,6 +174,46 @@ void Bh282Robot::checkJointPosDeviationError()
     setMode(bhand_::PROTECTIVE_STOP);
     bhand_::print_err_msg("[Bh282Robot ERROR]: Joint position deviation limit exceeded!\n");
   }
+}
+
+void Bh282Robot::initFreedrive()
+{
+  q_a = arma::vec().zeros(4);
+  dq_a = arma::vec().zeros(4);
+  ddq_a = arma::vec().zeros(4);
+  p_a = 10;
+  t_s = 1.0;
+}
+
+void Bh282Robot::updateFreedrive()
+{
+  double d_a = 0.3;
+  double k_a = 0.0;
+  t_s = 1.5;
+
+  arma::vec torq(4);
+  for (int i=0;i<4;i++) torq(i) = -getJointTorque((bhand_::JointName)i);
+
+  // arma::vec dddq_a = -3*p_a*ddq_a -3*std::pow(p_a,2)*dq_a -std::pow(p_a,3)*q_a + t_s*torq;
+  ddq_a = -d_a*dq_a -k_a*q_a + t_s*torq;
+
+  std::cout << "torq = " << torq.t() << "\n";
+  // std::cout << "q_a = " << q_a.t() << "\n";
+  std::cout << "dq_a = " << dq_a.t() << "\n";
+  // std::cout << "ddq_a = " << ddq_a.t() << "\n";
+
+  for (int i=0;i<4;i++) setJointVelocity(dq_a(i), (bhand_::JointName)i);
+  //setJointVelocity(dq_a, {bhand_::PACK, bhand_::FING1, bhand_::FING2, bhand_::FING3});
+
+  double Ts = getCtrlCycle();
+  q_a = q_a + dq_a*Ts;
+  dq_a = dq_a + ddq_a*Ts;
+  // ddq_a = ddq_a + dddq_a*Ts;
+}
+
+double Bh282Robot::getJointTorque(bhand_::JointName jn)
+{
+  return hw_i.getJointTorque((int)jn);
 }
 
 }; // namespace bhand_

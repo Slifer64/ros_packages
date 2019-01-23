@@ -24,6 +24,7 @@ public:
 
   void setJointPosition(double pos, bhand_::JointName jn);
   void setJointVelocity(double vel, bhand_::JointName jn);
+  double getJointTorque(bhand_::JointName jn);
 
 private:
   BhandHWInterface hw_i;
@@ -32,6 +33,14 @@ private:
   void checkJointPosDeviationError();
 
   double k_click;
+
+  // freedrive model
+  arma::vec q_a, dq_a, ddq_a;
+  double p_a; // admittance triple pole
+  double t_s; // torque scaling factor
+
+  void initFreedrive();
+  void updateFreedrive();
 };
 
 }; // namespace bhand_

@@ -71,6 +71,10 @@ public:
 
   void addJointState(sensor_msgs::JointState &joint_state_msg);
 
+  void setJointPositionHelper(const arma::vec &j_pos);
+  void setJointVelocityHelper(const arma::vec &j_vel);
+  void setTaskVelocityHelper(const arma::vec &task_vel);
+
 protected:
 
   void init();
@@ -132,10 +136,6 @@ protected:
   void protectiveStop();
 
   std::string getModeName() const;
-
-  void setJointPositionHelper(const arma::vec &j_pos);
-  void setJointVelocityHelper(const arma::vec &j_vel);
-  void setTaskVelocityHelper(const arma::vec &task_vel);
 
   void jStateSubCallback(const sensor_msgs::JointState::ConstPtr& jState);
 
