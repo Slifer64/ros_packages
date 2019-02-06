@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
   roslib
   lwr4p
   bhand
-  misc
+  misc_lib
   io_lib
 )
 
@@ -42,7 +42,7 @@ add_dependencies(lwr4p_robot_test
 target_link_libraries(lwr4p_robot_test
   armadillo
   lwr4p
-  misc
+  misc_lib
   ${catkin_LIBRARIES}
 )
 
@@ -61,7 +61,7 @@ add_dependencies(two_lwr4p_robots_test
 target_link_libraries(two_lwr4p_robots_test
   armadillo
   lwr4p
-  misc
+  misc_lib
   io_lib
   ${catkin_LIBRARIES}
 )
