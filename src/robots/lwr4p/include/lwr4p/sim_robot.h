@@ -14,6 +14,7 @@ class SimRobot : public RobotArm
 public:
   SimRobot();
   SimRobot(urdf::Model &urdf_model, const std::string &base_link, const std::string &tool_link, double ctrl_cycle);
+  SimRobot(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link, double ctrl_cycle);
 
   // void setJointLimitCheck(bool check);
   // void setSingularityCheck(bool check);

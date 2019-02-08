@@ -77,6 +77,23 @@ RobotArm::RobotArm(urdf::Model &urdf_model, const std::string &base_link, const 
   init();
 }
 
+RobotArm::RobotArm(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link, double ctrl_cycle)
+{
+  if (!urdf_model.initParam(robot_desc_param.c_str()))
+  {
+    throw std::ios_base::failure("Couldn't load urdf model from \"" + robot_desc_param + "\"...\n");
+  }
+
+  this->base_link_name = base_link;
+  this->tool_link_name = tool_link;
+  this->ctrl_cycle = ctrl_cycle;
+  this->check_limits = false;
+  this->check_singularity = false;
+  this->read_wrench_from_topic = false;
+
+  init();
+}
+
 RobotArm::~RobotArm() {}
 
 void RobotArm::init()

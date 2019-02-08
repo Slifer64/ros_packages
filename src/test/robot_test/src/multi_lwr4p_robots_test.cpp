@@ -9,7 +9,11 @@
 #include <lwr4p/robot_arm.h>
 #include <lwr4p/sim_robot.h>
 #include <lwr4p/robot.h>
-#include <misc/joint_state_publisher.h>
+#include <misc_lib/joint_state_publisher.h>
+#include <io_lib/xml_parser.h>
+
+#include <ros/ros.h>
+#include <ros/package.h>
 
 using namespace as64_;
 
@@ -18,13 +22,15 @@ double err_thres = 1e-2;
 struct ExecArgs
 {
   ExecArgs() {}
-  ExecArgs(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
+  ExecArgs(const arma::vec &q1, const arma::vec &q2, double total_time, lwr4p_::RobotArm *robot)
   {
-    this->qT = qT;
+    this->q1 = q1;
+    this->q2 = q2;
     this->total_time = total_time;
     this->robot = robot;
   }
-  arma::vec qT;
+  arma::vec q1;
+  arma::vec q2;
   double total_time;
   lwr4p_::RobotArm *robot;
 };
@@ -39,11 +45,9 @@ void PRINT_ERR_MSG(const std::string &msg)
   std::cerr << "\033[1m\033[31m" << "[RobotSim ERROR]: " << msg << "\033[0m\n";
 }
 
-void jointsTrajectory(const ExecArgs *args)
+void jointsTrajectory(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
 {
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  lwr4p_::RobotArm *robot = args->robot;
+
   // ======================================================
   // ===========   Set Joints trajectory  =================
   // ======================================================
@@ -60,11 +64,8 @@ void jointsTrajectory(const ExecArgs *args)
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void jointPositionControl(const ExecArgs *args)
+void jointPositionControl(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
 {
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  lwr4p_::RobotArm *robot = args->robot;
 
   // ======================================================
   // ===========   Joint Position Control  ================
@@ -96,11 +97,8 @@ void jointPositionControl(const ExecArgs *args)
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void jointVelocityControl(const ExecArgs *args)
+void jointVelocityControl(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
 {
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  lwr4p_::RobotArm *robot = args->robot;
 
   // ======================================================
   // ===========   Joint Velocity Control  ================
@@ -134,12 +132,8 @@ void jointVelocityControl(const ExecArgs *args)
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void cartesianVelocityControl(const ExecArgs *args)
+void cartesianVelocityControl(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
 {
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  lwr4p_::RobotArm *robot = args->robot;
-
   // ==========================================================
   // ===========   Cartesian Velocity Control  ================
   // ==========================================================
@@ -185,11 +179,8 @@ void cartesianVelocityControl(const ExecArgs *args)
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void taskTrajectory(const ExecArgs *args)
+void taskTrajectory(const arma::vec &qT, double total_time, lwr4p_::RobotArm *robot)
 {
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  lwr4p_::RobotArm *robot = args->robot;
 
   // ======================================================
   // ===========   Set Task trajectory  =================
@@ -208,9 +199,8 @@ void taskTrajectory(const ExecArgs *args)
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void freedrive(const ExecArgs *args)
+void freedrive(lwr4p_::RobotArm *robot)
 {
-  lwr4p_::RobotArm *robot = args->robot;
 
   // =========================================
   // ===========   FREEDIRVE  ================
@@ -232,103 +222,115 @@ void freedrive(const ExecArgs *args)
   }
 }
 
+void robotRun(ExecArgs *args)
+{
+  arma::vec q1 = args->q1;
+  arma::vec q2 = args->q2;
+  double time_duration = args->total_time;
+  lwr4p_::RobotArm *lwr4p_robot = args->robot;
+
+  // ===========   Set Joints trajectory  =================
+  jointsTrajectory(q1, time_duration, lwr4p_robot);
+
+  // ===========   Joint Position Control  ================
+  jointPositionControl(q2, time_duration, lwr4p_robot);
+
+  // ===========   Joint Velocity Control  ================
+  jointVelocityControl(q1, time_duration, lwr4p_robot);
+
+  // ===========   Cartesian Velocity Control  ================
+  cartesianVelocityControl(q2, time_duration, lwr4p_robot);
+
+  // ===========   Set Tasktrajectory  =================
+  taskTrajectory(q1, time_duration, lwr4p_robot);
+
+  // ===========   FREEDIRVE  ================
+  // sync all robots before stop publishing...
+  // if (use_sim) jState_pub.stop(); // stop publishing in freedrive when using SimRobot
+  freedrive(lwr4p_robot);
+}
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "lwr4p_robot_sim");
+  ros::init(argc, argv, "multi_lwr4p_robot_test");
   ros::NodeHandle nh("~");
-
-  int N_robots = 2;
-
-  std::vector<arma::vec> q1[N_robots];
-  std::vector<arma::vec> q2[N_robots];
-  std::vector<double> time_duration[N_robots]; // sec
-  std::vector<bool> use_sim[N_robots];
-
-  std::vector<double> q_vec;
-
-  if (nh.getParam("q1_1",q_vec)) q1[0] = q_vec;
-  else  q1[0] = {-0.5, 0.6, 0.3, -1.5, 0, -0.2, 1.1};
-  if (nh.getParam("q2_1",q_vec)) q2[0] = q_vec;
-  else  q2[0] = {0.8, 0.9, -0.1, -1.3, -0.1, -1.2, -1.3};
-  if (!nh.getParam("time_duration",time_duration)) throw std::ios_base::failure("Couldn't read time duration param.");
-
-  if (nh.getParam("use_sim",use_sim)) use_sim = true;
-
-  std::cout << "=======================================\n";
-  std::cout << "q1 = " << q1.t() << "\n";
-  std::cout << "q2 = " << q2.t() << "\n";
-  std::cout << "time_duration = " << time_duration << "\n";
-  std::cout << "use_sim = " << (use_sim?"true":"false") << "\n";
-  std::cout << "=======================================\n";
 
   // give some time to other nodes (rviz) to start as well
   std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 
-  // initialize robot 1
-  std::shared_ptr<lwr4p_::RobotArm> lwr4p_robot;
-  if (use_sim) lwr4p_robot.reset(new lwr4p_::SimRobot());
-  else lwr4p_robot.reset(new lwr4p_::Robot());
-  lwr4p_robot->setJointLimitCheck(true);
-  lwr4p_robot->setSingularityCheck(true);
-  // lwr4p_robot->setSingularityThreshold(8e-3);
-  // lwr4p_robot->readWrenchFromTopic(true, "/wrench");
+  // ============================================
+  // =========== Parse values  ==================
+  // ============================================
 
-  std::thread thr; // for running the robot control action
-  ExecArgs args; // arguments for each action
+  // initialize parser providing the path to the config file
+  std::string confi_file_path = ros::package::getPath("robot_test") + "/config/multi_lwr4p_robots_test.yaml";
+  as64_::io_::XmlParser parser(confi_file_path);
 
-  // initialize joint state publisher
+  std::string robot_description_name;
+  std::vector<std::string> base_link;
+  std::vector<std::string> tool_link;
+  std::vector<double> ctrl_cycle;
+
+  arma::mat q1;
+  arma::mat q2;
+  std::vector<double> time_duration;
+  std::vector<bool> use_sim;
+
+  if (!parser.getParam("robot_description_name",robot_description_name)) throw std::ios_base::failure("Failed to read parameter \"robot_description_name\".");
+  if (!parser.getParam("base_link",base_link)) throw std::ios_base::failure("Failed to read parameter \"base_link\".");
+  if (!parser.getParam("tool_link",tool_link)) throw std::ios_base::failure("Failed to read parameter \"tool_link\".");
+  if (!parser.getParam("ctrl_cycle",ctrl_cycle)) throw std::ios_base::failure("Failed to read parameter \"ctrl_cycle\".");
+
+  if (!parser.getParam("q1",q1)) throw std::ios_base::failure("Failed to read parameter \"q1\".");
+  if (!parser.getParam("q2",q2)) throw std::ios_base::failure("Failed to read parameter \"q2\".");
+  if (!parser.getParam("time_duration",time_duration)) throw std::ios_base::failure("Failed to read parameter \"time_duration\".");
+  if (!parser.getParam("use_sim",use_sim)) throw std::ios_base::failure("Failed to read parameter \"use_sim\".");
+
+  int N_robots = base_link.size();
+
+  // =========================================
+  // =========== initialize robots ===========
+  // =========================================
+  std::vector<std::shared_ptr<lwr4p_::RobotArm>> lwr4p_robot(N_robots);
+  for (int i=0; i<N_robots; i++)
+  {
+    if (use_sim[i]) lwr4p_robot[i].reset(new lwr4p_::SimRobot(robot_description_name, base_link[i], tool_link[i], ctrl_cycle[i]));
+    else lwr4p_robot[i].reset(new lwr4p_::Robot(robot_description_name, base_link[i], tool_link[i], ctrl_cycle[i]));
+    lwr4p_robot[i]->setJointLimitCheck(true);
+    lwr4p_robot[i]->setSingularityCheck(true);
+    // lwr4p_robot[i]->setSingularityThreshold(8e-3);
+    // lwr4p_robot[i]->readWrenchFromTopic(true, "/wrench");
+  }
+
+  // ========================================================
+  // =========== initialize joint state publisher ===========
+  // ========================================================
   as64_::misc_::JointStatePublisher jState_pub;
-  jState_pub.setPublishCycle(0.01);
+  jState_pub.setPublishCycle(0.0333); // 30 Hz
   std::string publish_states_topic;
-  nh.getParam("publish_states_topic",publish_states_topic);
+  if (!nh.getParam("publish_states_topic",publish_states_topic)) throw std::ios_base::failure("Failed to read parameter \"publish_states_topic\".");
   jState_pub.setPublishTopic(publish_states_topic);
+
+  std::cerr << "=========> publish_states_topic = " << publish_states_topic << "\n";
   // jState_pub.setPublishTopic("/robot_joint_states");
-  jState_pub.addFun(&lwr4p_::SimRobot::addJointState, lwr4p_robot.get());
+  for (int i=0; i<N_robots; i++) jState_pub.addFun(&lwr4p_::SimRobot::addJointState, lwr4p_robot[i].get());
 
   jState_pub.start(); // launches joint states publisher thread
 
-  // ===========   Set Joints trajectory  =================
-  args = ExecArgs(q1, time_duration, lwr4p_robot.get());
-  thr = std::thread(jointsTrajectory, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointsTrajectory(&args);
+  std::vector<std::thread> robot_run_thead(N_robots);
+  std::vector<std::shared_ptr<ExecArgs>> args(N_robots);
+  for (int i=0; i<N_robots; i++)
+  {
+    args[i].reset(new ExecArgs(q1.row(i).t(), q2.row(i).t(), time_duration[i], lwr4p_robot[i].get()));
+    robot_run_thead[i] = std::thread(robotRun, args[i].get());
+  }
 
-  // ===========   Joint Position Control  ================
-  args = ExecArgs(q2, time_duration, lwr4p_robot.get());
-  thr = std::thread(jointPositionControl, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointPositionControl(&args);
+  for (int i=0; i<N_robots; i++)
+  {
+    if (robot_run_thead[i].joinable()) robot_run_thead[i].join();
+  }
 
-  // ===========   Joint Velocity Control  ================
-  args = ExecArgs(q1, time_duration, lwr4p_robot.get());
-  thr = std::thread(jointVelocityControl, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointVelocityControl(&args);
-
-  // ===========   Cartesian Velocity Control  ================
-  args = ExecArgs(q2, time_duration, lwr4p_robot.get());
-  thr = std::thread(cartesianVelocityControl, &args);
-  // do other stuff ...
-  thr.join();
-  // or: cartesianVelocityControl(&args);
-
-  // ===========   Set Tasktrajectory  =================
-  args = ExecArgs(q1, time_duration, lwr4p_robot.get());
-  thr = std::thread(taskTrajectory, &args);
-  // do other stuff ...
-  thr.join();
-  // or: taskTrajectory(&args);
-
-  // ===========   FREEDIRVE  ================
-  if (use_sim) jState_pub.stop(); // stop publishing in freedrive when using SimRobot
-  args = ExecArgs(q1, time_duration, lwr4p_robot.get());
-  thr = std::thread(freedrive, &args);
-  // do other stuff ...
-  thr.join();
-  // or: freedrive(&args);
+  jState_pub.stop();
 
   return 0;
 }

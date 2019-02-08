@@ -17,6 +17,12 @@ SimRobot::SimRobot(urdf::Model &urdf_model, const std::string &base_link, const 
   initSimRobot();
 }
 
+SimRobot::SimRobot(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link,
+                   double ctrl_cycle): RobotArm(robot_desc_param, base_link, tool_link, ctrl_cycle)
+{
+  initSimRobot();
+}
+
 void SimRobot::initSimRobot()
 {
   // jState_pub = node.advertise<sensor_msgs::JointState>(pub_state_topic, 1);

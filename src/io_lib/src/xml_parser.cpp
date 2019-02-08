@@ -130,7 +130,7 @@ XmlParser::XmlParser(const std::string& fname)
         dataS = line.substr(mark+1,line.length());
         i = dataS.find_first_not_of("\t ");
         if (i==std::string::npos) throw std::ios_base::failure(errMsgAtLine(fname, line_number,"Missing value."));
-        size_t i2 = line.find_last_not_of("\t ");
+        size_t i2 = dataS.find_last_not_of("\t ");
         dataS = dataS.substr(i, i2-i+1);
 
         // Do we have a vector/matrix

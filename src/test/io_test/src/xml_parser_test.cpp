@@ -56,19 +56,19 @@ int main(int argc, char** argv)
 
   // =========== Parse values  ==================
 
-  if (parser.getParam("i",i)) std::ios_base::failure("Failed to read parameter \"i\".");
-  if (parser.getParam("d",d)) std::ios_base::failure("Failed to read parameter \"d\".");
-  if (parser.getParam("b",b)) std::ios_base::failure("Failed to read parameter \"b\".");
-  if (parser.getParam("str",str)) std::ios_base::failure("Failed to read parameter \"str\".");
+  if (!parser.getParam("i",i)) throw std::ios_base::failure("Failed to read parameter \"i\".");
+  if (!parser.getParam("d",d)) throw std::ios_base::failure("Failed to read parameter \"d\".");
+  if (!parser.getParam("b",b)) throw std::ios_base::failure("Failed to read parameter \"b\".");
+  if (!parser.getParam("str",str)) throw std::ios_base::failure("Failed to read parameter \"str\".");
 
-  if (parser.getParam("std_vec_int",std_vec_int)) std::ios_base::failure("Failed to read parameter \"std_vec_int\".");
-  if (parser.getParam("std_vec_double",std_vec_double)) std::ios_base::failure("Failed to read parameter \"std_vec_double\".");
-  if (parser.getParam("std_vec_bool",std_vec_bool)) std::ios_base::failure("Failed to read parameter \"std_vec_bool\".");
-  if (parser.getParam("std_vec_string",std_vec_string)) std::ios_base::failure("Failed to read parameter \"std_vec_string\".");
+  if (!parser.getParam("std_vec_int",std_vec_int)) throw std::ios_base::failure("Failed to read parameter \"std_vec_int\".");
+  if (!parser.getParam("std_vec_double",std_vec_double)) throw std::ios_base::failure("Failed to read parameter \"std_vec_double\".");
+  if (!parser.getParam("std_vec_bool",std_vec_bool)) throw std::ios_base::failure("Failed to read parameter \"std_vec_bool\".");
+  if (!parser.getParam("std_vec_string",std_vec_string)) throw std::ios_base::failure("Failed to read parameter \"std_vec_string\".");
 
-  if (parser.getParam("arma_vec",arma_vec)) std::ios_base::failure("Failed to read parameter \"arma_vec\".");
-  if (parser.getParam("arma_rowvec",arma_rowvec)) std::ios_base::failure("Failed to read parameter \"arma_rowvec\".");
-  if (parser.getParam("arma_mat",arma_mat)) std::ios_base::failure("Failed to read parameter \"arma_mat\".");
+  if (!parser.getParam("arma_vec",arma_vec)) throw std::ios_base::failure("Failed to read parameter \"arma_vec\".");
+  if (!parser.getParam("arma_rowvec",arma_rowvec)) throw std::ios_base::failure("Failed to read parameter \"arma_rowvec\".");
+  if (!parser.getParam("arma_mat",arma_mat)) throw std::ios_base::failure("Failed to read parameter \"arma_mat\".");
 
   // =========== Print values  ==================
   std::cout << "===================================\n";

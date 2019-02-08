@@ -1,4 +1,4 @@
-#include <misc/joint_state_publisher.h>
+#include <misc_lib/joint_state_publisher.h>
 
 namespace as64_
 {
@@ -41,7 +41,7 @@ void JointStatePublisher::addFun(void (*fun)(sensor_msgs::JointState &))
 
 void JointStatePublisher::setPublishCycle(double Ts)
 {
-  Ts = Ts*1e9;
+  this->Ts = Ts*1e9;
 }
 
 void JointStatePublisher::setPublishTopic(const std::string &pub_topic)
@@ -58,6 +58,27 @@ void JointStatePublisher::publishLoop()
 
     sensor_msgs::JointState joint_state_msg;
     for (int i=0; i<add_joint_state_funs.size(); i++) (add_joint_state_funs[i])(joint_state_msg);
+
+    // std::cout << "==========================================\n";
+    // std::cout << "==========  Joint State msg ==============\n";
+    // int N = joint_state_msg.name.size();
+    // std::cout << "** names **\n";
+    // for (int i=0;i<N; i++)
+    // {
+    //   std::cout << joint_state_msg.name[i] << " ";
+    // }
+    // std::cout << "\n** position **\n";
+    // for (int i=0;i<N; i++)
+    // {
+    //   std::cout << joint_state_msg.position[i] << " ";
+    // }
+    // std::cout << "\n** velocity **\n";
+    // for (int i=0;i<N; i++)
+    // {
+    //   std::cout << joint_state_msg.velocity[i] << " ";
+    // }
+    // std::cout << "\n";
+
     joint_state_pub.publish(joint_state_msg);
 
     lck.unlock();

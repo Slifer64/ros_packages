@@ -20,6 +20,13 @@ Robot::Robot(urdf::Model &urdf_model, const std::string &base_link, const std::s
   initRobot(path_to_FRI_init);
 }
 
+Robot::Robot(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link,
+  double ctrl_cycle, const char *path_to_FRI_init):
+  RobotArm(robot_desc_param, base_link, tool_link, ctrl_cycle)
+{
+  initRobot(path_to_FRI_init);
+}
+
 void Robot::initRobot(const char *path_to_FRI_init)
 {
   if (path_to_FRI_init == NULL)

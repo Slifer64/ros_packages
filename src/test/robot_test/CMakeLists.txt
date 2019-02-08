@@ -48,24 +48,22 @@ target_link_libraries(lwr4p_robot_test
 
 # ===================================
 
-#[[
-add_executable(two_lwr4p_robots_test
-  src/two_lwr4p_robots_test.cpp
+add_executable(multi_lwr4p_robots_test
+  src/multi_lwr4p_robots_test.cpp
 )
 
-add_dependencies(two_lwr4p_robots_test
+add_dependencies(multi_lwr4p_robots_test
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 
-target_link_libraries(two_lwr4p_robots_test
+target_link_libraries(multi_lwr4p_robots_test
   armadillo
   lwr4p
   misc_lib
   io_lib
   ${catkin_LIBRARIES}
 )
-]]
 
 # ===================================
 # ======   BH282 robot sim   ========

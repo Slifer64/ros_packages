@@ -9,7 +9,7 @@
 #include <lwr4p/robot_arm.h>
 #include <lwr4p/sim_robot.h>
 #include <lwr4p/robot.h>
-#include <misc/joint_state_publisher.h>
+#include <misc_lib/joint_state_publisher.h>
 
 using namespace as64_;
 
@@ -234,7 +234,7 @@ void freedrive(const ExecArgs *args)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "lwr4p_robot_sim");
+  ros::init(argc, argv, "lwr4p_robot_test");
   ros::NodeHandle nh("~");
 
   arma::vec q1;
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
   // initialize joint state publisher
   as64_::misc_::JointStatePublisher jState_pub;
-  jState_pub.setPublishCycle(0.01);
+  jState_pub.setPublishCycle(0.0333); // 30 Hz
   std::string publish_states_topic;
   nh.getParam("publish_states_topic",publish_states_topic);
   jState_pub.setPublishTopic(publish_states_topic);
