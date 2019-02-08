@@ -44,6 +44,8 @@ void Robot::initRobot(const char *path_to_FRI_init)
   for (size_t i = 0; i < 6; i++) {
     jacob_temp[i] = reinterpret_cast<float*>(malloc(sizeof(float) * 7));
   }
+
+  setGetExternalWrenchFun(&Robot::getExternalWrenchImplementation, this);
 }
 
 Robot::~Robot()
@@ -87,8 +89,6 @@ void Robot::update()
   FRI->WaitForKRCTick();
 
   if (getMode()!=lwr4p_::IDLE && !FRI->IsMachineOK()) protectiveStop();
-
-  if (read_wrench_from_topic) ros::spinOnce();
 
   switch (getMode()) {
     case IDLE:

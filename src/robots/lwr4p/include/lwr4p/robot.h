@@ -161,22 +161,7 @@ public:
     return output;
   }
 
-  arma::vec getExternalWrench()
-  {
-    if (read_wrench_from_topic) return Fext;
-
-    arma::vec output(6);
-    static float estimated_external_cart_forces_and_torques[6];
-    FRI->GetEstimatedExternalCartForcesAndTorques(estimated_external_cart_forces_and_torques);
-    output(0) = estimated_external_cart_forces_and_torques[0];
-    output(1) = estimated_external_cart_forces_and_torques[1];
-    output(2) = estimated_external_cart_forces_and_torques[2];
-    output(3) = estimated_external_cart_forces_and_torques[3];
-    output(4) = estimated_external_cart_forces_and_torques[4];
-    output(5) = estimated_external_cart_forces_and_torques[5];
-
-    return output;
-  }
+  // arma::vec getExternalWrench();
 
   void setJointsPosition(const arma::vec &j_pos)
   {
@@ -356,6 +341,23 @@ public:
   // void addJointState(sensor_msgs::JointState &joint_state_msg);
 
 private:
+
+  virtual arma::vec getExternalWrenchImplementation()
+  {
+    arma::vec output(6);
+    static float estimated_external_cart_forces_and_torques[6];
+    FRI->GetEstimatedExternalCartForcesAndTorques(estimated_external_cart_forces_and_torques);
+    output(0) = estimated_external_cart_forces_and_torques[0];
+    output(1) = estimated_external_cart_forces_and_torques[1];
+    output(2) = estimated_external_cart_forces_and_torques[2];
+    output(3) = estimated_external_cart_forces_and_torques[3];
+    output(4) = estimated_external_cart_forces_and_torques[4];
+    output(5) = estimated_external_cart_forces_and_torques[5];
+
+    return output;
+  }
+
+
   std::shared_ptr<FastResearchInterface> FRI;
   void startJointPositionController();
   void startJointTorqueController();

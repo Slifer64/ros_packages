@@ -26,20 +26,32 @@ namespace as64_
 namespace bhand_
 {
 
-RobotChain::RobotChain(urdf::Model &urdf_model,
-  const std::string &base_link, const std::string &tool_link,
-  double ctrl_cycle, bool check_limits, bool check_singularity,
-  const std::string &pub_state_topic, const std::string &wrench_topic)
+RobotChain::RobotChain(urdf::Model &urdf_model, const std::string &base_link, const std::string &tool_link, double ctrl_cycle)
 {
   this->urdf_model = urdf_model;
   this->base_link_name = base_link;
   this->tool_link_name = tool_link;
   this->ctrl_cycle = ctrl_cycle;
-  this->check_limits = check_limits;
-  this->check_singularity = check_singularity;
-  this->wrench_topic = wrench_topic;
-  this->pub_state_topic = pub_state_topic;
-  this->read_wrench_from_topic = wrench_topic.compare("");
+  this->check_limits = false;
+  this->check_singularity = false;
+  this->read_wrench_from_topic = false;
+
+  init();
+}
+
+RobotChain::RobotChain(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link, double ctrl_cycle)
+{
+  if (!urdf_model.initParam(robot_desc_param.c_str()))
+  {
+    throw std::ios_base::failure("Couldn't load urdf model from \"" + robot_desc_param + "\"...\n");
+  }
+
+  this->base_link_name = base_link;
+  this->tool_link_name = tool_link;
+  this->ctrl_cycle = ctrl_cycle;
+  this->check_limits = false;
+  this->check_singularity = false;
+  this->read_wrench_from_topic = false;
 
   init();
 }
@@ -173,6 +185,32 @@ void RobotChain::init()
   jState_sub = node.subscribe("/joint_states", 1, &RobotChain::jStateSubCallback, this);
 
   if (read_wrench_from_topic) wrench_sub = node.subscribe(wrench_topic.c_str(), 1, &RobotChain::readWrenchCallback, this);
+}
+
+void RobotChain::setJointLimitCheck(bool check)
+{
+  check_limits = check;
+}
+
+void RobotChain::setSingularityCheck(bool check)
+{
+  check_singularity = check;
+}
+
+void RobotChain::readWrenchFromTopic(bool set, const std::string &topic)
+{
+  if (read_wrench_from_topic) wrench_sub.shutdown();
+
+  read_wrench_from_topic=set;
+  wrench_topic=topic;
+
+  if (read_wrench_from_topic)
+    wrench_sub = node.subscribe(wrench_topic.c_str(), 1, &RobotChain::readWrenchCallback, this);
+}
+
+void RobotChain::setSingularityThreshold(double thres)
+{
+  SINGULARITY_THRES = thres;
 }
 
 bool RobotChain::isOk() const

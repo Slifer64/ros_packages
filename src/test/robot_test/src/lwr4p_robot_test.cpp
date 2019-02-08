@@ -271,7 +271,9 @@ int main(int argc, char **argv)
   lwr4p_robot->setJointLimitCheck(true);
   lwr4p_robot->setSingularityCheck(true);
   // lwr4p_robot->setSingularityThreshold(8e-3);
-  // lwr4p_robot->readWrenchFromTopic(true, "/wrench");
+  // lwr4p_robot->readWrenchFromTopic("/wrench");
+  // or
+  // lwr4p_robot->setGetExternalWrenchFun(/*some function pointer*/);
 
   std::thread thr; // for running the robot control action
   ExecArgs args; // arguments for each action

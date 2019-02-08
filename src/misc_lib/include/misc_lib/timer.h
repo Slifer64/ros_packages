@@ -1,5 +1,5 @@
-#ifndef AS64_TIMER
-#define AS64_TIMER
+#ifndef AS64_MISC_LIB_TIMER
+#define AS64_MISC_LIB_TIMER
 
 #include <chrono>
 
@@ -48,4 +48,4 @@ private:
 
 } // namespace as64_
 
-#endif // AS64_TIMER
+#endif // AS64_MISC_LIB_TIMER

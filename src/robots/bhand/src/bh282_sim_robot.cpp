@@ -6,6 +6,16 @@ namespace as64_
 namespace bhand_
 {
 
+Bh282SimRobot::Bh282SimRobot(urdf::Model &urdf_model, const std::vector<std::string> &base_link,
+                      const std::vector<std::string> &tool_link, double ctrl_cycle)
+                      :RobotHand(urdf_model, base_link, tool_link, ctrl_cycle)
+{}
+
+Bh282SimRobot::Bh282SimRobot(const std::string &robot_desc_param, const std::vector<std::string> &base_link,
+                      const std::vector<std::string> &tool_link, double ctrl_cycle)
+                      :RobotHand(urdf_model, base_link, tool_link, ctrl_cycle)
+{}
+
 Bh282SimRobot::Bh282SimRobot()
 {
   if (!node.getParam("/bh282_robot/base_frame",base_link))

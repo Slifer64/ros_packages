@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <functional>
 #include <map>
 #include <string>
 #include <thread>
@@ -19,10 +20,6 @@
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainiksolverpos_nr.hpp>
-
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <geometry_msgs/WrenchStamped.h>
 
 #include <armadillo>
 #include <lwr4p/utils.h>
@@ -44,7 +41,14 @@ public:
   void setJointLimitCheck(bool check);
   void setSingularityCheck(bool check);
   void setSingularityThreshold(double thres);
-  void readWrenchFromTopic(bool set, const std::string &topic="");
+
+  void readWrenchFromTopic(const std::string &topic);
+  void setGetExternalWrenchFun(arma::vec (*getWrenchFun)(void));
+  template<class T>
+  void setGetExternalWrenchFun(arma::vec (T::*getWrenchFun)(void), T *obj_ptr)
+  {
+    get_wrench_fun_ptr = std::bind(getWrenchFun, obj_ptr);
+  }
 
   virtual bool isOk() const;
   virtual void enable();
@@ -85,6 +89,8 @@ public:
   void addJointState(sensor_msgs::JointState &joint_state_msg);
 
 protected:
+
+  virtual arma::vec getExternalWrenchImplementation() = 0;
 
   void setJointsPositionHelper(const arma::vec &j_pos);
   void setJointsVelocityHelper(const arma::vec &j_vel);
@@ -132,9 +138,7 @@ protected:
   bool check_limits;
   bool check_singularity;
 
-  bool read_wrench_from_topic;
-  std::string wrench_topic;
-  ros::Subscriber wrench_sub;
+  std::shared_ptr<WrenchReader> wrench_reader;
 
   std::string err_msg;
   bool checkJointPosLimits(const arma::vec &j_pos);
@@ -146,7 +150,7 @@ protected:
 
   std::string getModeName(Mode mode) const;
 
-  void readWrenchCallback(const geometry_msgs::WrenchStamped::ConstPtr& wrench_ptr);
+  std::function<arma::vec(void)> get_wrench_fun_ptr;
 };
 
 }; // namespace lwr4p_

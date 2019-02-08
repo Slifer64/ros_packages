@@ -8,6 +8,7 @@ find_package(catkin REQUIRED
   roscpp
   roslib
   sensor_msgs
+  geometry_msgs
 )
 
 catkin_package(
@@ -19,6 +20,7 @@ catkin_package(
 SET(SRC_LIST
   src/joint_state_publisher.cpp
   src/timer.cpp
+  src/wrench_reader.cpp
 )
 
 include_directories(

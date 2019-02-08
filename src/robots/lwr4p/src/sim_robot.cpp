@@ -28,6 +28,8 @@ void SimRobot::initSimRobot()
   // jState_pub = node.advertise<sensor_msgs::JointState>(pub_state_topic, 1);
   jState_sub = node.subscribe("/joint_states", 1, &SimRobot::jStateSubCallback, this);
 
+  setGetExternalWrenchFun(&SimRobot::getExternalWrenchImplementation, this);
+
   update_time = (unsigned long)(getCtrlCycle()*1e9);
   timer.start();
 }
@@ -144,6 +146,11 @@ void SimRobot::jStateSubCallback(const sensor_msgs::JointState::ConstPtr& j_stat
     joint_pos[i] = j_map[joint_names[i]];
   // joint_vel = j_state->velocity;
   // joint_torques = j_state->effort;
+}
+
+arma::vec SimRobot::getExternalWrenchImplementation()
+{
+  return arma::vec().zeros(6);
 }
 
 }; // namespace lwr4p_

@@ -48,12 +48,6 @@ RobotArm::RobotArm()
     check_singularity = false;
   }
 
-  if (!node.getParam("/lwr4p_robot/wrench_topic",wrench_topic))
-  {
-    wrench_topic = "";
-    read_wrench_from_topic = false;
-  }
-
   //std::string urdf_file_path = ros::package::getPath("lwr4p") + "/urdf/lwr4p_robot.urdf";
   if (!urdf_model.initParam(robot_description_name.c_str()))
   // if (!urdf_model.initFile(urdf_file_path.c_str()))
@@ -72,7 +66,6 @@ RobotArm::RobotArm(urdf::Model &urdf_model, const std::string &base_link, const 
   this->ctrl_cycle = ctrl_cycle;
   this->check_limits = false;
   this->check_singularity = false;
-  this->read_wrench_from_topic = false;
 
   init();
 }
@@ -89,7 +82,6 @@ RobotArm::RobotArm(const std::string &robot_desc_param, const std::string &base_
   this->ctrl_cycle = ctrl_cycle;
   this->check_limits = false;
   this->check_singularity = false;
-  this->read_wrench_from_topic = false;
 
   init();
 }
@@ -228,20 +220,14 @@ void RobotArm::setSingularityCheck(bool check)
   check_singularity = check;
 }
 
-void RobotArm::readWrenchFromTopic(bool set, const std::string &topic)
-{
-  if (read_wrench_from_topic) wrench_sub.shutdown();
-
-  read_wrench_from_topic=set;
-  wrench_topic=topic;
-
-  if (read_wrench_from_topic)
-    wrench_sub = node.subscribe(wrench_topic.c_str(), 1, &RobotArm::readWrenchCallback, this);
-}
-
 void RobotArm::setSingularityThreshold(double thres)
 {
   SINGULARITY_THRES = thres;
+}
+
+void RobotArm::setGetExternalWrenchFun(arma::vec (*getWrenchFun)(void))
+{
+  get_wrench_fun_ptr = std::bind(getWrenchFun);
 }
 
 void RobotArm::enable()
@@ -547,7 +533,7 @@ arma::vec RobotArm::getJointsTorque() const
 arma::vec RobotArm::getExternalWrench() const
 {
   // std::unique_lock<std::mutex> lck(robot_state_mtx);
-  return Fext;
+  return get_wrench_fun_ptr();
 }
 
 bool RobotArm::checkJointPosLimits(const arma::vec &j_pos)
@@ -610,18 +596,13 @@ bool RobotArm::checkSingularity()
   return true;
 }
 
-void RobotArm::readWrenchCallback(const geometry_msgs::WrenchStamped::ConstPtr& wrench_ptr)
+void RobotArm::readWrenchFromTopic(const std::string &topic)
 {
-  if (!read_wrench_from_topic) return;
-
-  Fext(0) = wrench_ptr->wrench.force.x;
-  Fext(1) = wrench_ptr->wrench.force.y;
-  Fext(2) = wrench_ptr->wrench.force.z;
-
-  Fext(3) = wrench_ptr->wrench.torque.x;
-  Fext(4) = wrench_ptr->wrench.torque.y;
-  Fext(5) = wrench_ptr->wrench.torque.z;
+  wrench_reader.reset(new WrenchReader(topic));
+  setGetExternalWrenchFun(&WrenchReader::getWrench, wrench_reader.get());
 }
+
+
 
 }; // namespace lwr4p_
 

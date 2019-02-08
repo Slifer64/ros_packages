@@ -14,9 +14,8 @@ class Bh282Robot : public RobotHand
 {
 public:
   Bh282Robot();
-  Bh282Robot(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link,
-    double ctrl_cycle, bool check_limits, bool check_singularity, const std::string &pub_state_topic, const std::vector<std::string> &wrench_topic):
-    RobotHand(urdf_model, base_link, tool_link, ctrl_cycle, check_limits, check_singularity, pub_state_topic, wrench_topic) {}
+  Bh282Robot(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  Bh282Robot(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
   ~Bh282Robot();
 
   void update();

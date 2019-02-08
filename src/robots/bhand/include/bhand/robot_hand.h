@@ -1,5 +1,5 @@
-#ifndef SIMULATED_ROBOT_HAND_H
-#define SIMULATED_ROBOT_HAND_H
+#ifndef BHAND_ROBOT_HAND_H
+#define BHAND_ROBOT_HAND_H
 
 #include <bhand/robot_chain.h>
 
@@ -13,8 +13,8 @@ class RobotHand
 {
 public:
   RobotHand() {}
-  RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link,
-    double ctrl_cycle, bool check_limits, bool check_singularity, const std::string &pub_state_topic, const std::vector<std::string> &wrench_topic);
+  RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  RobotHand(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
   ~RobotHand();
 
   virtual bool isOk() const;
@@ -85,4 +85,4 @@ protected:
 
 }; // namespace as64_
 
-#endif // SIMULATED_ROBOT_HAND_H
+#endif // BHAND_ROBOT_HAND_H

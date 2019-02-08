@@ -61,6 +61,8 @@ public:
 private:
   void initSimRobot();
 
+  arma::vec getExternalWrenchImplementation();
+
   void stopController();
 
   lwr4p_::Timer timer;

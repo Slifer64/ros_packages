@@ -1,5 +1,5 @@
-#ifndef SIM_ROBOT_CHAIN_H
-#define SIM_ROBOT_CHAIN_H
+#ifndef BHAND_ROBOT_CHAIN_H
+#define BHAND_ROBOT_CHAIN_H
 
 #include <iostream>
 #include <cstdlib>
@@ -34,21 +34,23 @@ namespace bhand_
 class RobotChain
 {
 public:
-  RobotChain(urdf::Model &urdf_model,
-    const std::string &base_link, const std::string &tool_link,
-    double ctrl_cycle, bool check_limits, bool check_singularity,
-    const std::string &pub_state_topic, const std::string &wrench_topic="");
+  RobotChain(urdf::Model &urdf_model, const std::string &base_link, const std::string &tool_link, double ctrl_cycle);
+  RobotChain(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link, double ctrl_cycle);
   ~RobotChain();
+
+  void setJointLimitCheck(bool check);
+  void setSingularityCheck(bool check);
+  void setSingularityThreshold(double thres);
+  void readWrenchFromTopic(bool set, const std::string &topic="");
 
   bool isOk() const;
   void enable();
   std::string getErrMsg() const;
-
-  void setMode(const bhand_::Mode &m);
   bhand_::Mode getMode() const;
-
   double getCtrlCycle() const;
   int getNumJoints() const;
+
+  void setMode(const bhand_::Mode &m);
 
   void setJointPosition(const arma::vec &j_pos);
   void setJointVelocity(const arma::vec &j_vel);
@@ -146,4 +148,4 @@ protected:
 
 }; // namespace as64_
 
-#endif // SIM_ROBOT_CHAIN_H
+#endif // BHAND_ROBOT_CHAIN_H

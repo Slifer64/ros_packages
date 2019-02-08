@@ -299,7 +299,7 @@ int main(int argc, char **argv)
     lwr4p_robot[i]->setJointLimitCheck(true);
     lwr4p_robot[i]->setSingularityCheck(true);
     // lwr4p_robot[i]->setSingularityThreshold(8e-3);
-    // lwr4p_robot[i]->readWrenchFromTopic(true, "/wrench");
+    // lwr4p_robot[i]->readWrenchFromTopic("/wrench");
   }
 
   // ========================================================

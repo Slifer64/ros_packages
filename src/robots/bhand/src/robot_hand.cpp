@@ -6,17 +6,29 @@ namespace as64_
 namespace bhand_
 {
 
-RobotHand::RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link,
-  double ctrl_cycle, bool check_limits, bool check_singularity, const std::string &pub_state_topic, const std::vector<std::string> &wrench_topic)
+RobotHand::RobotHand(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
+{
+  if (!urdf_model.initParam(robot_desc_param.c_str()))
+  {
+    throw std::ios_base::failure("Couldn't load urdf model from \"" + robot_desc_param + "\"...\n");
+  }
+
+  this->base_link = base_link;
+  this->tool_link = tool_link;
+  this->ctrl_cycle = ctrl_cycle;
+  this->check_limits = false;
+  this->check_singularity = false;
+
+  init();
+}
+
+RobotHand::RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
 {
     this->urdf_model = urdf_model;
     this->base_link = base_link;
     this->tool_link = tool_link;
     this->ctrl_cycle = ctrl_cycle;
-    this->check_limits = check_limits;
-    this->check_singularity = check_singularity;
-    this->pub_state_topic = pub_state_topic;
-    this->wrench_topic = wrench_topic;
+    this->check_limits = false;
 }
 
 void RobotHand::init()
@@ -28,7 +40,7 @@ void RobotHand::init()
   jState_pub = node.advertise<sensor_msgs::JointState>(pub_state_topic, 1);
 
   for (int i=0; i<N_fingers; i++)
-    fingers[i].reset(new RobotChain(urdf_model, base_link[i], tool_link[i], ctrl_cycle, check_limits, check_singularity, wrench_topic[i]));
+    fingers[i].reset(new RobotChain(urdf_model, base_link[i], tool_link[i], ctrl_cycle));
 
   setMode(bhand_::IDLE);
 
