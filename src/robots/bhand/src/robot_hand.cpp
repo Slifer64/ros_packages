@@ -6,7 +6,7 @@ namespace as64_
 namespace bhand_
 {
 
-RobotHand::RobotHand(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
+RobotHand::RobotHand(const std::string &robot_desc_param, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
 {
   if (!urdf_model.initParam(robot_desc_param.c_str()))
   {
@@ -22,22 +22,22 @@ RobotHand::RobotHand(const std::string &robot_desc_param, const std::vector<std:
   init();
 }
 
-RobotHand::RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
+RobotHand::RobotHand(urdf::Model &urdf_model, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle)
 {
     this->urdf_model = urdf_model;
     this->base_link = base_link;
     this->tool_link = tool_link;
     this->ctrl_cycle = ctrl_cycle;
     this->check_limits = false;
+    this->check_singularity = false;
+
+    init();
 }
 
 void RobotHand::init()
 {
   N_fingers = tool_link.size();
   fingers.resize(N_fingers);
-
-  // subscribe to topics
-  jState_pub = node.advertise<sensor_msgs::JointState>(pub_state_topic, 1);
 
   for (int i=0; i<N_fingers; i++)
     fingers[i].reset(new RobotChain(urdf_model, base_link[i], tool_link[i], ctrl_cycle));
@@ -77,28 +77,15 @@ std::string RobotHand::getErrMsg() const
   return err_msg;
 }
 
+void RobotHand::addJointState(sensor_msgs::JointState &joint_state_msg)
+{
+  for (int i=0;i<N_fingers;i++)
+  {
+    fingers[i]->addJointState(joint_state_msg);
+  }
+}
+
 void RobotHand::update()
-{
-  updateState(); // update state
-  if (getMode() != bhand_::FREEDRIVE) publishState(); // publish joint state
-  waitNextCycle(); // wait for timecycle to complete
-}
-
-void RobotHand::updateState()
-{
-  for (int i=0;i<N_fingers;i++) fingers[i]->updateState();
-}
-
-void RobotHand::publishState()
-{
-  if (getMode() == bhand_::FREEDRIVE) return;
-
-  sensor_msgs::JointState joint_state_msg;
-  for (int i=0;i<N_fingers;i++) fingers[i]->addJointState(joint_state_msg);
-  jState_pub.publish(joint_state_msg);
-}
-
-void RobotHand::waitNextCycle()
 {
   unsigned long elaps_time = timer.elapsedNanoSec();
   if (elaps_time < update_time)
@@ -144,7 +131,7 @@ void RobotHand::getChainFingerInd(bhand_::JointName jn, int &chain_ind, int &joi
   }
 }
 
-void RobotHand::setJointPosition(double pos, bhand_::JointName jn)
+void RobotHand::setJointsPosition(double pos, bhand_::JointName jn)
 {
   int chain_ind;
   int joint_ind;
@@ -152,20 +139,20 @@ void RobotHand::setJointPosition(double pos, bhand_::JointName jn)
 
   arma::vec j_pos = fingers[chain_ind]->getJointsPosition();
   j_pos(joint_ind) = pos;
-  fingers[chain_ind]->setJointPosition(j_pos);
+  fingers[chain_ind]->setJointsPosition(j_pos);
   if (!fingers[chain_ind]->isOk()) setMode(bhand_::PROTECTIVE_STOP);
 }
 
-void RobotHand::setJointPosition(arma::vec j_pos, const std::vector<bhand_::JointName> &jn)
+void RobotHand::setJointsPosition(arma::vec j_pos, const std::vector<bhand_::JointName> &jn)
 {
   for (int i=0; i<jn.size(); i++)
   {
-    setJointPosition(j_pos(i), jn[i]);
+    setJointsPosition(j_pos(i), jn[i]);
     if (!isOk()) return;
   }
 }
 
-void RobotHand::setJointVelocity(double vel, bhand_::JointName jn)
+void RobotHand::setJointsVelocity(double vel, bhand_::JointName jn)
 {
   int chain_ind;
   int joint_ind;
@@ -173,15 +160,15 @@ void RobotHand::setJointVelocity(double vel, bhand_::JointName jn)
 
   arma::vec j_vel = arma::vec().zeros(fingers[chain_ind]->getNumJoints());
   j_vel(joint_ind) = vel;
-  fingers[chain_ind]->setJointVelocity(j_vel);
+  fingers[chain_ind]->setJointsVelocity(j_vel);
   if (!fingers[chain_ind]->isOk()) setMode(bhand_::PROTECTIVE_STOP);
 }
 
-void RobotHand::setJointVelocity(arma::vec j_vel, const std::vector<bhand_::JointName> &jn)
+void RobotHand::setJointsVelocity(arma::vec j_vel, const std::vector<bhand_::JointName> &jn)
 {
   for (int i=0; i<jn.size(); i++)
   {
-    setJointVelocity(j_vel(i), jn[i]);
+    setJointsVelocity(j_vel(i), jn[i]);
     if (!isOk()) break;
   }
 }
@@ -218,7 +205,7 @@ arma::vec RobotHand::getJointVelocity(const std::vector<bhand_::JointName> &jn) 
   return j_vel;
 }
 
-bool RobotHand::setJointTrajectory(arma::vec j_target, double duration, const std::vector<bhand_::JointName> &jn)
+bool RobotHand::setJointsTrajectory(arma::vec j_target, double duration, const std::vector<bhand_::JointName> &jn)
 {
   // keep last known robot mode
   bhand_::Mode prev_mode = getMode();
@@ -240,8 +227,8 @@ bool RobotHand::setJointTrajectory(arma::vec j_target, double duration, const st
     update();
     t += Ts;
     qref = get5thOrder(t, q0, j_target, duration)[0];
-    setJointPosition(qref, jn);
-    // for (int i=0; i<qref.size() && isOk(); i++) setJointPosition(qref(i),jn[i]);
+    setJointsPosition(qref, jn);
+    // for (int i=0; i<qref.size() && isOk(); i++) setJointsPosition(qref(i),jn[i]);
   }
 
   bool reached_target = t>=duration;

@@ -290,16 +290,6 @@ int RobotArm::getNumJoints() const
   return N_JOINTS;
 }
 
-void RobotArm::setCartStiffness(const arma::vec &cart_stiff)
-{
-  this->cart_stiff = cart_stiff;
-}
-
-void RobotArm::setCartDamping(const arma::vec &cart_damp)
-{
-  this->cart_damp = cart_damp;
-}
-
 bool RobotArm::setJointsTrajectory(const arma::vec &j_targ, double duration)
 {
   // keep last known robot mode

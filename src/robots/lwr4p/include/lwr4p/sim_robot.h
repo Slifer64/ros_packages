@@ -51,7 +51,10 @@ public:
   // virtual arma::mat getEEJacobian() const;
   // virtual arma::vec getJointsTorque() const;
   // virtual arma::vec getExternalWrench() const;
-  //
+
+  virtual void setCartStiffness(const arma::vec &cart_stiff);
+  virtual void setCartDamping(const arma::vec &cart_damp);
+
   // arma::vec getJointsPosition(const arma::mat &pose, const arma::vec &q0, bool *found_solution=NULL) const;
   // arma::mat getTaskPose(const arma::vec &j_pos) const;
   // arma::mat getJacobian(const arma::vec j_pos) const;
@@ -59,6 +62,12 @@ public:
   // void addJointState(sensor_msgs::JointState &joint_state_msg);
 
 private:
+
+  ros::Subscriber jState_sub; ///< joint state subscriber
+
+  arma::vec cart_stiff;
+  arma::vec cart_damp;
+
   void initSimRobot();
 
   arma::vec getExternalWrenchImplementation();

@@ -13,8 +13,8 @@ class RobotHand
 {
 public:
   RobotHand() {}
-  RobotHand(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
-  RobotHand(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  RobotHand(urdf::Model &urdf_model, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  RobotHand(const std::string &robot_desc_param, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
   ~RobotHand();
 
   virtual bool isOk() const;
@@ -32,11 +32,11 @@ public:
   int getNumJoints(int fing_ind) const { return fingers[fing_ind]->getNumJoints(); }
   int getNumFingers() const { return N_fingers; }
 
-  virtual void setJointPosition(double pos, bhand_::JointName jn);
-  void setJointPosition(arma::vec j_pos, const std::vector<bhand_::JointName> &jn={SPREAD,FING1,FING2,FING3});
-  virtual void setJointVelocity(double vel, bhand_::JointName jn);
-  void setJointVelocity(arma::vec j_vel, const std::vector<bhand_::JointName> &jn={SPREAD,FING1,FING2,FING3});
-  virtual bool setJointTrajectory(arma::vec j_target, double duration, const std::vector<bhand_::JointName> &jn);
+  virtual void setJointsPosition(double pos, bhand_::JointName jn);
+  void setJointsPosition(arma::vec j_pos, const std::vector<bhand_::JointName> &jn={SPREAD,FING1,FING2,FING3});
+  virtual void setJointsVelocity(double vel, bhand_::JointName jn);
+  void setJointsVelocity(arma::vec j_vel, const std::vector<bhand_::JointName> &jn={SPREAD,FING1,FING2,FING3});
+  virtual bool setJointsTrajectory(arma::vec j_target, double duration, const std::vector<bhand_::JointName> &jn);
 
   virtual double getJointPosition(bhand_::JointName jn) const;
   arma::vec getJointPosition(const std::vector<bhand_::JointName> &jn={SPREAD,FING1,FING2,FING3}) const;
@@ -52,12 +52,16 @@ public:
   virtual arma::vec getJointTorques(bhand_::ChainName chain_ind) const { return fingers[(int)chain_ind]->getJointTorques(); };
   virtual arma::vec getExternalForce(bhand_::ChainName chain_ind) const { return fingers[(int)chain_ind]->getExternalForce(); };
 
+  void addJointState(sensor_msgs::JointState &joint_state_msg);
+
 protected:
+
+  void setJointsPositionHelper(const arma::vec &j_pos);
+  void setJointsVelocityHelper(const arma::vec &j_vel);
+  void setTaskVelocityHelper(const arma::vec &task_vel);
+
   void getChainFingerInd(bhand_::JointName jn, int &chain_ind, int &joint_ind) const;
   void init();
-  void updateState();
-  void publishState();
-  void waitNextCycle();
 
   unsigned long update_time;
   bhand_::Timer timer;
@@ -69,14 +73,10 @@ protected:
   bool check_singularity;
 
   int N_fingers;
-  std::vector<std::string> base_link;
+  std::string base_link;
   std::vector<std::string> tool_link;
   std::vector<std::string> wrench_topic;
-  std::vector<std::shared_ptr<RobotChain>> fingers;
-
-  std::string pub_state_topic;
-  ros::NodeHandle node;
-  ros::Publisher jState_pub; ///< joint state publisher
+  std::vector<std::shared_ptr<KinematicChain>> fingers;
 
   urdf::Model urdf_model;
 };

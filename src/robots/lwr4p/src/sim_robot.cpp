@@ -121,6 +121,16 @@ void SimRobot::setWrench(const arma::vec &wrench)
   throw std::runtime_error("[ERROR]: SimRobot::setWrench is not supported.");
 }
 
+void SimRobot::setCartStiffness(const arma::vec &cart_stiff)
+{
+  this->cart_stiff = cart_stiff;
+}
+
+void SimRobot::setCartDamping(const arma::vec &cart_damp)
+{
+  this->cart_damp = cart_damp;
+}
+
 void SimRobot::stopController()
 {
   if (getMode() == lwr4p_::IDLE) return;

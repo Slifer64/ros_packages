@@ -10,7 +10,6 @@ find_package(catkin REQUIRED
   roscpp
   roslib
   lwr4p
-  bhand
   misc_lib
   io_lib
 )
@@ -26,9 +25,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-# ===================================
-# ======   LWR4+ robot sim   ========
-# ===================================
+# ===============================
+# ======   LWR4+ robot   ========
+# ===============================
 
 add_executable(lwr4p_robot_test
   src/lwr4p_robot_test.cpp
@@ -65,10 +64,11 @@ target_link_libraries(multi_lwr4p_robots_test
   ${catkin_LIBRARIES}
 )
 
-# ===================================
-# ======   BH282 robot sim   ========
-# ===================================
+# ================================
+# ======    BH282 robot   ========
+# ================================
 
+#[[
 add_executable(bh282_robot_test
   src/bh282_robot_test.cpp
 )
@@ -83,22 +83,7 @@ target_link_libraries(bh282_robot_test
   bhand
   ${catkin_LIBRARIES}
 )
-
-# +++++++++++++++++++++++++++++++++++++++
-add_executable(stop_barrett
-  src/stop_barrett.cpp
-)
-
-add_dependencies(stop_barrett
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(stop_barrett
-  armadillo
-  bhand
-  ${catkin_LIBRARIES}
-)
+]]
 
 # ===================================
 # ===================================

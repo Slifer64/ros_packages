@@ -38,18 +38,6 @@ public:
   RobotArm(const std::string &robot_desc_param, const std::string &base_link, const std::string &tool_link, double ctrl_cycle);
   ~RobotArm();
 
-  void setJointLimitCheck(bool check);
-  void setSingularityCheck(bool check);
-  void setSingularityThreshold(double thres);
-
-  void readWrenchFromTopic(const std::string &topic);
-  void setGetExternalWrenchFun(arma::vec (*getWrenchFun)(void));
-  template<class T>
-  void setGetExternalWrenchFun(arma::vec (T::*getWrenchFun)(void), T *obj_ptr)
-  {
-    get_wrench_fun_ptr = std::bind(getWrenchFun, obj_ptr);
-  }
-
   virtual bool isOk() const;
   virtual void enable();
   std::string getErrMsg() const;
@@ -68,8 +56,8 @@ public:
   virtual void setTaskPose(const arma::mat &task_pose) = 0;
   virtual void setWrench(const arma::vec &wrench) = 0;
 
-  virtual void setCartStiffness(const arma::vec &cart_stiff);
-  virtual void setCartDamping(const arma::vec &cart_damp);
+  virtual void setCartStiffness(const arma::vec &cart_stiff) = 0;
+  virtual void setCartDamping(const arma::vec &cart_damp) = 0;
 
   virtual arma::vec getJointsPosition() const;
   virtual arma::vec getJointsVelocity() const;
@@ -86,11 +74,24 @@ public:
   arma::mat getTaskPose(const arma::vec &j_pos) const;
   arma::mat getJacobian(const arma::vec j_pos) const;
 
+  void setJointLimitCheck(bool check);
+  void setSingularityCheck(bool check);
+  void setSingularityThreshold(double thres);
+
+  void readWrenchFromTopic(const std::string &topic);
+  void setGetExternalWrenchFun(arma::vec (*getWrenchFun)(void));
+  template<class T>
+  void setGetExternalWrenchFun(arma::vec (T::*getWrenchFun)(void), T *obj_ptr)
+  {
+    get_wrench_fun_ptr = std::bind(getWrenchFun, obj_ptr);
+  }
+
   void addJointState(sensor_msgs::JointState &joint_state_msg);
 
 protected:
 
   virtual arma::vec getExternalWrenchImplementation() = 0;
+  virtual void stopController() = 0;
 
   void setJointsPositionHelper(const arma::vec &j_pos);
   void setJointsVelocityHelper(const arma::vec &j_vel);
@@ -115,8 +116,6 @@ protected:
   KDL::Chain chain;
 
   ros::NodeHandle node;
-  // ros::Publisher jState_pub; ///< joint state publisher
-  ros::Subscriber jState_sub; ///< joint state subscriber
 
   std::vector<std::string> joint_names;
   std::vector<double> joint_pos_lower_lim;
@@ -132,9 +131,6 @@ protected:
   arma::vec joint_pos;
   arma::vec Fext;
 
-  arma::vec cart_stiff;
-  arma::vec cart_damp;
-
   bool check_limits;
   bool check_singularity;
 
@@ -145,7 +141,6 @@ protected:
   bool checkJointVelLimits(const arma::vec &dj_pos);
   bool checkSingularity();
 
-  virtual void stopController() = 0;
   void protectiveStop();
 
   std::string getModeName(Mode mode) const;
