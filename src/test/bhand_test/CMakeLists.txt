@@ -38,6 +38,7 @@ set(LINK_LIBRARIES
 
 add_executable(bh282_robot_test
   src/bh282_robot_test.cpp
+  src/utils.cpp
 )
 
 add_dependencies(bh282_robot_test
@@ -51,9 +52,9 @@ target_link_libraries(bh282_robot_test
 
 # ===================================
 
-#[[
 add_executable(multi_bh282_robots_test
   src/multi_bh282_robots_test.cpp
+  src/utils.cpp
 )
 
 add_dependencies(multi_bh282_robots_test
@@ -64,7 +65,6 @@ add_dependencies(multi_bh282_robots_test
 target_link_libraries(multi_bh282_robots_test
   ${LINK_LIBRARIES}
 )
-]]
 
 # ===================================
 # ===================================

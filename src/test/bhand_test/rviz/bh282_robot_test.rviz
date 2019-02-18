@@ -57,46 +57,72 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        lwr_arm_1_link:
+        bh282_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_2_link:
+        bh282_finger_11_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_3_link:
+        bh282_finger_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_4_link:
+        bh282_finger_13_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_5_link:
+        bh282_finger_1_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_finger_21_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_6_link:
+        bh282_finger_22_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_7_link:
+        bh282_finger_23_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr_arm_base_link:
+        bh282_finger_2_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_finger_31_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        bh282_finger_32_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_finger_33_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_finger_3_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         world:
           Alpha: 1
           Show Axes: false
@@ -145,22 +171,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.65268
+      Distance: 0.43666
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.200927
-        Y: 0.0373202
-        Z: 0.341432
+        X: 0.0419378
+        Y: -0.0251946
+        Z: 0.0626021
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.519796
+      Pitch: 0.644796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.49407
+      Yaw: 2.71406
     Saved: ~
 Window Geometry:
   Displays:

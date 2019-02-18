@@ -1,18 +1,3 @@
-#include <iostream>
-#include <cstdlib>
-#include <chrono>
-#include <memory>
-#include <thread>
-#include <vector>
-#include <ros/ros.h>
-#include <armadillo>
-
-#include <lwr4p/robot_arm.h>
-#include <lwr4p/sim_robot.h>
-#include <lwr4p/robot.h>
-#include <misc_lib/joint_state_publisher.h>
-
-
 #include <lwr4p_test/utils.h>
 
 using namespace as64_;

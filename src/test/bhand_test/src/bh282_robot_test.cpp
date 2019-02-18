@@ -1,46 +1,18 @@
-#include <iostream>
-#include <cstdlib>
-#include <chrono>
-#include <memory>
-#include <thread>
-#include <vector>
-#include <ros/ros.h>
-#include <armadillo>
-
-#include <bhand/robot_hand.h>
-#include <bhand/bh282_sim_robot.h>
-#include <bhand/bh282_robot.h>
-#include <misc_lib/joint_state_publisher.h>
+#include <bhand_test/utils.h>
 
 using namespace as64_;
-
-double err_thres = 1e-2;
-
-struct ExecArgs
-{
-  ExecArgs() {}
-  ExecArgs(const arma::vec &qT, double total_time, bhand_::RobotHand *robot)
-  {
-    this->qT = qT;
-    this->total_time = total_time;
-    this->robot = robot;
-  }
-  arma::vec qT;
-  double total_time;
-  bhand_::RobotHand *robot;
-};
-
-void PRINT_INFO_MSG(const std::string &msg);
-void PRINT_ERR_MSG(const std::string &msg);
-void jointsTrajectory(const ExecArgs *args);
-void jointPositionControl(const ExecArgs *args);
-void jointVelocityControl(const ExecArgs *args);
-void freedrive(const ExecArgs *args);
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "bhand_robot_test");
   ros::NodeHandle nh("~");
+
+  // give some time to other nodes (rviz) to start as well
+  std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+
+  // ============================================
+  // =========== Parse values  ==================
+  // ============================================
 
   std::string robot_desc;
   std::string base_link;
@@ -52,38 +24,30 @@ int main(int argc, char **argv)
   double time_duration; // sec
   bool use_sim;
 
+  if (!nh.getParam("robot_description_name",robot_desc)) throw std::ios_base::failure("Failed to read parameter \"robot_description_name\".");
+  if (!nh.getParam("base_link",base_link)) throw std::ios_base::failure("Failed to read parameter \"base_link\".");
+  if (!nh.getParam("tool_link",tool_link)) throw std::ios_base::failure("Failed to read parameter \"tool_link\".");
+  if (!nh.getParam("ctrl_cycle",ctrl_cycle)) throw std::ios_base::failure("Failed to read parameter \"ctrl_cycle\".");
+
   std::vector<double> q_vec;
+  if (!nh.getParam("q1",q_vec)) throw std::ios_base::failure("Failed to read parameter \"q1\".");
+  q1 = q_vec;
+  if (!nh.getParam("q2",q_vec)) throw std::ios_base::failure("Failed to read parameter \"q2\".");
+  q2 = q_vec;
+  if (!nh.getParam("time_duration",time_duration)) throw std::ios_base::failure("Failed to read parameter \"time_duration\".");
+  if (!nh.getParam("use_sim",use_sim)) throw std::ios_base::failure("Failed to read parameter \"use_sim\".");
 
-  if (nh.getParam("q1",q_vec)) q1 = q_vec;
-  else  q1 = {-0.5, 0.6, 0.3, -1.5, 0, -0.2, 1.1};
-
-  if (nh.getParam("q2",q_vec)) q2 = q_vec;
-  else  q2 = {0.8, 0.9, -0.1, -1.3, -0.1, -1.2, -1.3};
-
-  if (!nh.getParam("time_duration",time_duration)) time_duration = 5.0;
-
-  if (nh.getParam("use_sim",use_sim)) use_sim = true;
-
-  std::cout << "=======================================\n";
-  std::cout << "q1 = " << q1.t() << "\n";
-  std::cout << "q2 = " << q2.t() << "\n";
-  std::cout << "time_duration = " << time_duration << "\n";
-  std::cout << "use_sim = " << (use_sim?"true":"false") << "\n";
-  std::cout << "=======================================\n";
-
-  // give some time to other nodes (rviz) to start as well
-  std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-
-  // initialize robot
+  // ========================================
+  // =========== initialize robot ===========
+  // ========================================
   std::shared_ptr<bhand_::RobotHand> bhand_robot;
-  if (use_sim) bhand_robot.reset(new bhand_::Bh282SimRobot());
-  else bhand_robot.reset(new bhand_::Bh282Robot());
+  if (use_sim) bhand_robot.reset(new bhand_::Bh282SimRobot(robot_desc,base_link,tool_link,ctrl_cycle));
+  else bhand_robot.reset(new bhand_::Bh282Robot(robot_desc,base_link,tool_link,ctrl_cycle));
   bhand_robot->setJointLimitCheck(true);
 
-  std::thread thr; // for running the robot control action
-  ExecArgs args; // arguments for each action
-
-  // initialize joint state publisher
+  // ========================================================
+  // =========== initialize joint state publisher ===========
+  // ========================================================
   as64_::misc_::JointStatePublisher jState_pub;
   jState_pub.setPublishCycle(0.0333); // 30 Hz
   std::string publish_states_topic;
@@ -94,163 +58,22 @@ int main(int argc, char **argv)
 
   jState_pub.start(); // launches joint states publisher thread
 
+  // =================================================
+  // =========== Start robot execution ===============
+  // =================================================
+
   // ===========   Set Joints trajectory  =================
-  args = ExecArgs(q1, time_duration, bhand_robot.get());
-  thr = std::thread(jointsTrajectory, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointsTrajectory(&args);
+  jointsTrajectory(q1, time_duration, bhand_robot.get());
 
   // ===========   Joint Position Control  ================
-  args = ExecArgs(q2, time_duration, bhand_robot.get());
-  thr = std::thread(jointPositionControl, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointPositionControl(&args);
+  jointPositionControl(q2, time_duration, bhand_robot.get());
 
   // ===========   Joint Velocity Control  ================
-  args = ExecArgs(q1, time_duration, bhand_robot.get());
-  thr = std::thread(jointVelocityControl, &args);
-  // do other stuff ...
-  thr.join();
-  // or: jointVelocityControl(&args);
+  jointVelocityControl(q1, time_duration, bhand_robot.get());
 
+  jState_pub.stop(); // launches joint states publisher thread
   // ===========   FREEDIRVE  ================
-  if (use_sim) jState_pub.stop(); // stop publishing in freedrive when using SimRobot
-  args = ExecArgs(q1, time_duration, bhand_robot.get());
-  thr = std::thread(freedrive, &args);
-  // do other stuff ...
-  thr.join();
-  // or: freedrive(&args);
+  freedrive(bhand_robot.get());
 
   return 0;
-}
-
-void PRINT_INFO_MSG(const std::string &msg)
-{
-  std::cerr << "\033[1m\033[34m" << "[RobotSim INFO]: " << msg << "\033[0m\n";
-}
-
-void PRINT_ERR_MSG(const std::string &msg)
-{
-  std::cerr << "\033[1m\033[31m" << "[RobotSim ERROR]: " << msg << "\033[0m\n";
-}
-
-void jointsTrajectory(const ExecArgs *args)
-{
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  bhand_::RobotHand *robot = args->robot;
-  // ======================================================
-  // ===========   Set Joints trajectory  =================
-  // ======================================================
-  std::cerr << "=====================================\n";
-  PRINT_INFO_MSG("==> Moving with Joints Trajectory...");
-  bool reached_target = robot->setJointsTrajectory(qT, total_time);
-  if (reached_target) PRINT_INFO_MSG("==> Reached target pose!");
-  else  PRINT_ERR_MSG("==> Failed to reach target pose!\n");
-  if (!robot->isOk())
-  {
-    PRINT_ERR_MSG("==> " + robot->getErrMsg());
-    robot->enable();
-  }
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-}
-
-void jointPositionControl(const ExecArgs *args)
-{
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  bhand_::RobotHand *robot = args->robot;
-
-  // ======================================================
-  // ===========   Joint Position Control  ================
-  // ======================================================
-  std::cerr << "=====================================\n";
-  PRINT_INFO_MSG("==> Setting the robot to JOINT_POS_CONTROL...");
-  robot->setMode(bhand_::JOINT_POS_CONTROL);
-  PRINT_INFO_MSG("==> Moving with joint position control...");
-  robot->update();
-  double Ts = robot->getCtrlCycle();
-  arma::vec q = robot->getJointsPosition();
-  arma::vec q0 = q;
-  double t = 0;
-  while (arma::norm(qT-q)>err_thres && robot->isOk())
-  {
-    if (!ros::ok()) exit(-1);
-    t += Ts;
-    arma::vec q_ref = bhand_::get5thOrder(t, q0, qT, total_time)[0];
-    robot->setJointsPosition(q_ref);
-    robot->update();
-    q = robot->getJointsPosition();
-  }
-  if (!robot->isOk())
-  {
-    PRINT_ERR_MSG("[ERROR]: " + robot->getErrMsg());
-    robot->enable();
-  }
-  else PRINT_INFO_MSG("==> Reached target pose!");
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-}
-
-void jointVelocityControl(const ExecArgs *args)
-{
-  arma::vec qT = args->qT;
-  double total_time = args->total_time;
-  bhand_::RobotHand *robot = args->robot;
-
-  // ======================================================
-  // ===========   Joint Velocity Control  ================
-  // ======================================================
-  std::cerr << "=====================================\n";
-  PRINT_INFO_MSG("==> Setting the robot to JOINT_VEL_CONTROL...");
-  robot->setMode(bhand_::JOINT_VEL_CONTROL);
-  PRINT_INFO_MSG("==> Moving with joint velocity control...");
-  robot->update();
-  double Ts = robot->getCtrlCycle();
-  arma::vec q = robot->getJointsPosition();
-  arma::vec q0 = q;
-  double k_click = 0.1;
-  double t = 0;
-  while (arma::norm(qT-q)>err_thres && robot->isOk())
-  {
-    if (!ros::ok()) exit(-1);
-    t += Ts;
-    arma::vec q_ref = bhand_::get5thOrder(t, q0, qT, total_time)[0];
-    arma::vec dq_ref = bhand_::get5thOrder(t, q0, qT, total_time)[1];
-    robot->setJointsVelocity(dq_ref + k_click*(q_ref-q));
-    robot->update();
-    q = robot->getJointsPosition();
-  }
-  if (!robot->isOk())
-  {
-    PRINT_ERR_MSG("[ERROR]: " + robot->getErrMsg());
-    robot->enable();
-  }
-  else PRINT_INFO_MSG("==> Reached target pose!");
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-}
-
-void freedrive(const ExecArgs *args)
-{
-  bhand_::RobotHand *robot = args->robot;
-
-  // =========================================
-  // ===========   FREEDIRVE  ================
-  // =========================================
-  std::cerr << "=====================================\n";
-  PRINT_INFO_MSG("==> Setting the robot to FREEDRIVE...");
-  robot->setMode(bhand_::FREEDRIVE);
-  PRINT_INFO_MSG("==> The robot is in FREEDIRVE. Move it wherever you want. Press ctrl+C to exit...");
-
-  while (ros::ok() && robot->isOk())
-  {
-    robot->update();
-  }
-
-  if (!robot->isOk())
-  {
-    PRINT_INFO_MSG("[ERROR]: " + robot->getErrMsg());
-    robot->enable();
-  }
 }

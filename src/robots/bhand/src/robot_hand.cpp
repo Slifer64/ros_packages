@@ -97,6 +97,9 @@ void RobotHand::init()
 
   mode = bhand_::Mode::IDLE;
 
+  N_fingers = tool_link_name.size();
+
+  fingers.resize(N_fingers);
   for (int i=0; i<N_fingers; i++)
     fingers[i].reset(new KinematicChain(urdf_model, base_link_name, tool_link_name[i]));
 
