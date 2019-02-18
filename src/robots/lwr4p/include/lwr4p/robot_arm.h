@@ -72,7 +72,7 @@ public:
   // return using the urdf model and kdl forward-inverse kinematics solvers
   arma::vec getJointsPosition(const arma::mat &pose, const arma::vec &q0, bool *found_solution=NULL) const;
   arma::mat getTaskPose(const arma::vec &j_pos) const;
-  arma::mat getJacobian(const arma::vec j_pos) const;
+  arma::mat getJacobian(const arma::vec &j_pos) const;
 
   void setJointLimitCheck(bool check);
   void setSingularityCheck(bool check);
@@ -90,8 +90,9 @@ public:
 
 protected:
 
+  virtual void stop() = 0;
+  virtual void protectiveStop() = 0;
   virtual arma::vec getExternalWrenchImplementation() = 0;
-  virtual void stopController() = 0;
 
   void setJointsPositionHelper(const arma::vec &j_pos);
   void setJointsVelocityHelper(const arma::vec &j_vel);
@@ -140,8 +141,6 @@ protected:
   bool checkJointPosLimits(const arma::vec &j_pos);
   bool checkJointVelLimits(const arma::vec &dj_pos);
   bool checkSingularity();
-
-  void protectiveStop();
 
   std::string getModeName(Mode mode) const;
 

@@ -2,15 +2,9 @@
 <launch>
 
   <!--
-  =====  Load Configuration file  =====
-  -->
-  <arg name="robot_config" default="$(find robot_test)/config/lwr4p_robot_test.yaml" />
-  <rosparam command="load" file="$(arg robot_config)" />
-
-  <!--
   =====  Load Robot description  =====
   -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find robot_test)/urdf/lwr4p_robot_test.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find bhand_test)/urdf/bh282_robot_test.xacro'" />
 
   <!-- Set the name of the topic for publishing the joints states -->
   <arg name="publish_states_topic" default="/robot_joint_states" />
@@ -18,7 +12,7 @@
   <!--
   =====  Launch joint_state_publisher, robot_state_publisher and rviz  =====
   -->
-  <!-- <include file="$(find lwr4p)/launch/common.launch" /> -->
+  <!-- <include file="$(find bh282)/launch/common.launch" /> -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" required="true">
     <rosparam param="source_list" subst_value="true">[$(arg publish_states_topic)]</rosparam>
     <rosparam>
@@ -27,19 +21,24 @@
     </rosparam>
   </node>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" required="true"/>
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find robot_test)/rviz/lwr4p_robot_test.rviz" output="screen" required="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find bhand_test)/rviz/bh282_robot_test.rviz" output="screen" required="true"/>
 
   <!--
   =====  Launch execution node  =====
   -->
-  <node name="lwr4p_robot_test_node"
-        pkg="robot_test"
-        type="lwr4p_robot_test"
+  <node name="bh282_robot_test_node"
+        pkg="bhand_test"
+        type="bh282_robot_test"
         required="true" respawn="false" cwd="node" output="screen">
 
         <rosparam param="publish_states_topic" subst_value="true">$(arg publish_states_topic)</rosparam>
 
         <rosparam>
+          robot_description_name: "/robot_description"
+          base_link: "bh282_base_joint"
+          tool_link: ["bh282_finger_1_tip_link", "bh282_finger_2_tip_link", "bh282_finger_3_tip_link"]
+          ctrl_cycle: 0.005
+
           <!-- j0, j1, j2, j3, j4, j5, j6 -->
           q1: [-0.46, 0.58, 0.28, -1.4, 0, -0.25, 1.27]
           q2: [2.1, 0.92, -0.24, -1.38, 0.03, -1.51, -1.42]

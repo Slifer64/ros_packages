@@ -20,17 +20,17 @@ RobotArm::RobotArm()
   std::string robot_description_name;
   if (!node.getParam("/lwr4p_robot/robot_description_name",robot_description_name))
   {
-    throw std::runtime_error("Failed to load parameter \"/lwr4p_robot/robot_description_name\" ...\n");
+    throw std::runtime_error("[RobotArm Error]: Failed to load parameter \"/lwr4p_robot/robot_description_name\" ...\n");
   }
 
   if (!node.getParam("/lwr4p_robot/base_frame",base_link_name))
   {
-    throw std::runtime_error("Failed to load parameter \"/lwr4p_robot/base_frame\" ...\n");
+    throw std::runtime_error("[RobotArm Error]: Failed to load parameter \"/lwr4p_robot/base_frame\" ...\n");
   }
 
   if (!node.getParam("/lwr4p_robot/tool_frame",tool_link_name))
   {
-    throw std::runtime_error("Failed to load parameter \"/lwr4p_robot/tool_frame\" ...\n");
+    throw std::runtime_error("[RobotArm Error]: Failed to load parameter \"/lwr4p_robot/tool_frame\" ...\n");
   }
 
   if (!node.getParam("/lwr4p_robot/ctrl_cycle",ctrl_cycle))
@@ -52,7 +52,7 @@ RobotArm::RobotArm()
   if (!urdf_model.initParam(robot_description_name.c_str()))
   // if (!urdf_model.initFile(urdf_file_path.c_str()))
   {
-    throw std::ios_base::failure("Couldn't load urdf model from \"" + robot_description_name + "\"...\n");
+    throw std::ios_base::failure("[RobotArm Error]: Couldn't load urdf model from \"" + robot_description_name + "\"...\n");
   }
 
   init();
@@ -132,10 +132,10 @@ void RobotArm::init()
   }
 
   if (!found_base_link)
-    throw std::runtime_error("Couldn't find specified base link \"" + base_link_name + "\" in the robot urdf model...\n");
+    throw std::runtime_error("[RobotArm Error]: Couldn't find specified base link \"" + base_link_name + "\" in the robot urdf model...\n");
 
   if (!found_tool_link)
-    throw std::runtime_error("Couldn't find specified tool link \"" + tool_link_name + "\" in the robot urdf model...\n");
+    throw std::runtime_error("[RobotArm Error]: Couldn't find specified tool link \"" + tool_link_name + "\" in the robot urdf model...\n");
 
   // find all links in the chain from tool_link to base_link
   std::vector<boost::shared_ptr<const urdf::Link>> chain_links;
@@ -188,7 +188,7 @@ void RobotArm::init()
 
   if (!tree.getChain(base_link_name, tool_link_name, chain))
   {
-    throw std::runtime_error("Failed to create kdl chain from " + base_link_name + " to " + tool_link_name + " ...\n");
+    throw std::runtime_error("[RobotArm Error]: Failed to create kdl chain from " + base_link_name + " to " + tool_link_name + " ...\n");
   }
   else
   {
@@ -272,17 +272,6 @@ lwr4p_::Mode RobotArm::getMode() const
 std::string RobotArm::getModeName(Mode mode) const
 {
   return (mode_name.find(mode))->second;
-}
-
-void RobotArm::protectiveStop()
-{
-  if (getMode() == lwr4p_::PROTECTIVE_STOP) return;
-
-  joint_pos = getJointsPosition();
-  prev_joint_pos = joint_pos;
-  // update();
-  mode = lwr4p_::Mode::PROTECTIVE_STOP;
-  print_warn_msg("Mode changed to \"" + getModeName(getMode()) + "\"\n");
 }
 
 int RobotArm::getNumJoints() const
@@ -486,7 +475,7 @@ arma::mat RobotArm::getJacobian() const
   return getJacobian(getJointsPosition());
 }
 
-arma::mat RobotArm::getJacobian(const arma::vec j_pos) const
+arma::mat RobotArm::getJacobian(const arma::vec &j_pos) const
 {
   KDL::JntArray jnt(N_JOINTS);
   for (int i=0;i<N_JOINTS;i++) jnt(i) = j_pos(i);

@@ -14,21 +14,29 @@ class Bh282Robot : public RobotHand
 {
 public:
   Bh282Robot();
-  Bh282Robot(urdf::Model &urdf_model, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
-  Bh282Robot(const std::string &robot_desc_param, const std::vector<std::string> &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  Bh282Robot(urdf::Model &urdf_model, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
+  Bh282Robot(const std::string &robot_desc_param, const std::string &base_link, const std::vector<std::string> &tool_link, double ctrl_cycle);
   ~Bh282Robot();
 
   void update();
   void setMode(const bhand_::Mode &m);
 
-  void setJointPosition(double pos, bhand_::JointName jn);
-  void setJointVelocity(double vel, bhand_::JointName jn);
-  double getJointTorque(bhand_::JointName jn);
+  void setJointsPosition(const arma::vec &j_pos);
+  void setJointsVelocity(const arma::vec &j_vel);
+  void setTaskVelocity(bhand_::ChainName &chain_name, const arma::vec &task_vel);
+
+  arma::vec getJointsTorque() const;
 
 private:
   BhandHWInterface hw_i;
 
-  arma::vec getActualPosition();
+  void stop();
+  void protectiveStop();
+
+  void velCmdToHw();
+  void initRobot();
+
+  arma::vec getJointPosFromHW();
   void checkJointPosDeviationError();
 
   double k_click;

@@ -38,22 +38,28 @@ void SimRobot::setMode(const lwr4p_::Mode &m)
 {
   if (getMode() == m) return;
 
+  if (m == PROTECTIVE_STOP)
+  {
+    protectiveStop();
+    return;
+  }
+
+  stop();
+  if (!isOk()) return;
+
   switch (m) {
-    case lwr4p_::Mode::PROTECTIVE_STOP:
-      protectiveStop();
-      break;
     case lwr4p_::Mode::IDLE:
     case lwr4p_::Mode::FREEDRIVE:
     case lwr4p_::Mode::JOINT_POS_CONTROL:
     case lwr4p_::Mode::JOINT_VEL_CONTROL:
     case lwr4p_::Mode::CART_VEL_CONTROL:
-      stopController();
-      mode = m;
       break;
     case lwr4p_::Mode::JOINT_TORQUE_CONTROL:
     case lwr4p_::Mode::CART_IMPEDANCE_CONTROL:
-      throw std::runtime_error("[lwr4+::SimRobot::setMode]: Unsupported control mode.");
+      throw std::runtime_error("[lwr4+::SimRobot::setMode]: \"CART_IMPEDANCE_CONTROL\" is not supported.");
   }
+
+  mode = m;
 }
 
 void SimRobot::update()
@@ -131,7 +137,7 @@ void SimRobot::setCartDamping(const arma::vec &cart_damp)
   this->cart_damp = cart_damp;
 }
 
-void SimRobot::stopController()
+void SimRobot::stop()
 {
   if (getMode() == lwr4p_::IDLE) return;
 
@@ -140,7 +146,16 @@ void SimRobot::stopController()
   setJointsPositionHelper(q_current);
   prev_joint_pos = getJointsPosition();
   if (isOk()) mode = lwr4p_::IDLE;
-  update();
+}
+
+void SimRobot::protectiveStop()
+{
+  if (getMode() == lwr4p_::PROTECTIVE_STOP) return;
+
+  joint_pos = getJointsPosition();
+  prev_joint_pos = joint_pos;
+  mode = lwr4p_::Mode::PROTECTIVE_STOP;
+  print_warn_msg("Mode changed to \"" + getModeName(getMode()) + "\"\n");
 }
 
 void SimRobot::jStateSubCallback(const sensor_msgs::JointState::ConstPtr& j_state)

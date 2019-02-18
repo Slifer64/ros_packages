@@ -362,7 +362,9 @@ private:
   void startJointPositionController();
   void startJointTorqueController();
   void startCartImpController();
-  void stopController();
+  void stop();
+  void protectiveStop();
+
   void initRobot(const char *path_to_FRI_init = NULL);
 
   arma::vec getJointsPositionFromFRI()

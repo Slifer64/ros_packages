@@ -63,8 +63,6 @@ public:
 
 private:
 
-  ros::Subscriber jState_sub; ///< joint state subscriber
-
   arma::vec cart_stiff;
   arma::vec cart_damp;
 
@@ -72,12 +70,13 @@ private:
 
   arma::vec getExternalWrenchImplementation();
 
-  void stopController();
+  void stop();
+  void protectiveStop();
 
   lwr4p_::Timer timer;
   unsigned long update_time;
-  void waitNextCycle();
 
+  ros::Subscriber jState_sub; ///< joint state subscriber
   void jStateSubCallback(const sensor_msgs::JointState::ConstPtr& jState);
 };
 

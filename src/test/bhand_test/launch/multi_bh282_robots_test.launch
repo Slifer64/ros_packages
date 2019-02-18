@@ -4,13 +4,13 @@
   <!--
   =====  Load Configuration file  =====
   -->
-  <arg name="robot_config" default="$(find robot_test)/config/multi_lwr4p_robots_test.yaml" />
+  <arg name="robot_config" default="$(find lwr4p_test)/config/multi_lwr4p_robots_test.yaml" />
   <rosparam command="load" file="$(arg robot_config)" />
 
   <!--
   =====  Load Robot description  =====
   -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find robot_test)/urdf/multi_lwr4p_robots_test.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find lwr4p_test)/urdf/multi_lwr4p_robots_test.xacro'" />
 
   <!-- Set the name of the topic for publishing the joints states -->
   <arg name="publish_states_topic" default="/robot_joint_states" />
@@ -27,13 +27,13 @@
     </rosparam>
   </node>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" required="true"/>
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find robot_test)/rviz/multi_lwr4p_robots_test.rviz" output="screen" required="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find lwr4p_test)/rviz/multi_lwr4p_robots_test.rviz" output="screen" required="true"/>
 
   <!--
   =====  Launch execution node  =====
   -->
   <node name="multi_lwr4p_robots_test_node"
-        pkg="robot_test"
+        pkg="lwr4p_test"
         type="multi_lwr4p_robots_test"
         required="true" respawn="false" cwd="node" output="screen">
 

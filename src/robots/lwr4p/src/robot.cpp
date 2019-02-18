@@ -35,7 +35,7 @@ void Robot::initRobot(const char *path_to_FRI_init)
     FRI.reset(new FastResearchInterface(path_to_FRI_init));
 
   ctrl_cycle = FRI->GetFRICycleTime();
-  stopController();  // Initially the robot is stopped
+  stop();  // Initially the robot is stopped
   this->mode = lwr4p_::Mode::IDLE;
   // startJointPositionController();
 
@@ -58,13 +58,18 @@ Robot::~Robot()
 
 void Robot::setMode(const lwr4p_::Mode &m)
 {
-  if (mode == getMode()) return;
+  if (getMode() == m) return;
 
-  stopController();
+  if (m == PROTECTIVE_STOP)
+  {
+    protectiveStop();
+    return;
+  }
 
+  stop();
   if (!isOk()) return;
 
-  switch (mode)
+  switch (m)
   {
     case lwr4p_::Mode::IDLE:
       break;
@@ -81,7 +86,7 @@ void Robot::setMode(const lwr4p_::Mode &m)
       startCartImpController();
       break;
   }
-  this->mode = mode;
+  mode = m;
 }
 
 void Robot::update()
@@ -178,7 +183,7 @@ void Robot::startJointPositionController()
   if ((ResultValue != 0) && (ResultValue != EALREADY))
   {
     print_err_msg("[LWR4+::startJointPositionController] Error occurred! The controller will put in \"" + getModeName(lwr4p_::IDLE) + "\" mode.");
-    stopController();
+    stop();
   }
   // std::cout << "[JointPosController::startController] " << "Finished" << std::endl;
 }
@@ -225,7 +230,7 @@ void Robot::startJointTorqueController()
   if ((ResultValue != 0) && (ResultValue != EALREADY))
   {
     print_err_msg("[LWR4+::startJointTorqueController] Error occurred! The controller will put in \"" + getModeName(lwr4p_::IDLE) + "\" mode.");
-    stopController();
+    stop();
   }
 
   // std::cout << "[KukaTorqueController::startController] " << "Finished" << std::endl;
@@ -272,19 +277,25 @@ void Robot::startCartImpController()
   if ((ResultValue != 0) && (ResultValue != EALREADY))
   {
     print_err_msg("[LWR4+::startCartImpController] Error occurred! The controller will put in \"" + getModeName(lwr4p_::IDLE) + "\" mode.");
-    stopController();
+    stop();
     return;
   }
   // std::cout << "[KukaCartImpedanceController::startController] " << "Finished" << std::endl;
 }
 
-void Robot::stopController()
+void Robot::stop()
 {
   if (getMode() == lwr4p_::Mode::IDLE) return;
 
   FRI->WaitForKRCTick();
+
+  arma::vec q_current = getJointsPosition();
+  setJointsPositionHelper(q_current);
+  prev_joint_pos = getJointsPosition();
+  if (!isOk()) protectiveStop();
+
   // printouts
-  // std::cout << "[KukaController::stopController] Stopping  control." << std::endl;
+  // std::cout << "[KukaController::stop] Stopping  control." << std::endl;
 
   static float pose[12];
   static float poseoff[12];
@@ -328,8 +339,21 @@ void Robot::stopController()
   else
   {
     protectiveStop();
-    err_msg = "[LWR4+::stopController]: Error occured!";
+    err_msg = "[LWR4+::stop]: Error occured!";
   }
+}
+
+void Robot::protectiveStop()
+{
+  if (getMode() == lwr4p_::PROTECTIVE_STOP) return;
+
+  FRI->StopRobot();
+
+  joint_pos = getJointsPosition();
+  prev_joint_pos = joint_pos;
+  // update();
+  mode = lwr4p_::Mode::PROTECTIVE_STOP;
+  print_warn_msg("Mode changed to \"" + getModeName(getMode()) + "\"\n");
 }
 
 }  // namespace lwr4p_

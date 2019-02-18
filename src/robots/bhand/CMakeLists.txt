@@ -26,7 +26,7 @@ file(GLOB BHAND_API_SRC "src/bhand_API/*.cpp" "include/bhand/bhand_API/src/*.cpp
 
 SET(SRC_LIST
   src/utils.cpp
-  src/robot_chain.cpp
+  src/kinematic_chain.cpp
   src/robot_hand.cpp
   src/bh282_robot.cpp
   src/bh282_sim_robot.cpp

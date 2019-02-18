@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-project(robot_test)
+project(bhand_test)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -9,7 +9,7 @@ add_definitions(-DLINUX)
 find_package(catkin REQUIRED
   roscpp
   roslib
-  lwr4p
+  bhand
   misc_lib
   io_lib
 )
@@ -25,11 +25,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-# ================================
-# ======    BH282 robot   ========
-# ================================
+set(LINK_LIBRARIES
+  armadillo
+  bhand
+  misc_lib
+  ${catkin_LIBRARIES}
+)
 
-#[[
+# ===============================
+# ======   LWR4+ robot   ========
+# ===============================
+
 add_executable(bh282_robot_test
   src/bh282_robot_test.cpp
 )
@@ -40,9 +46,23 @@ add_dependencies(bh282_robot_test
 )
 
 target_link_libraries(bh282_robot_test
-  armadillo
-  bhand
-  ${catkin_LIBRARIES}
+  ${LINK_LIBRARIES}
+)
+
+# ===================================
+
+#[[
+add_executable(multi_bh282_robots_test
+  src/multi_bh282_robots_test.cpp
+)
+
+add_dependencies(multi_bh282_robots_test
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(multi_bh282_robots_test
+  ${LINK_LIBRARIES}
 )
 ]]
 
