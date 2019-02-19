@@ -11,7 +11,6 @@ find_package(catkin REQUIRED
   roslib
   lwr4p
   misc_lib
-  io_lib
 )
 
 catkin_package(
@@ -62,30 +61,8 @@ target_link_libraries(multi_lwr4p_robots_test
   armadillo
   lwr4p
   misc_lib
-  io_lib
   ${catkin_LIBRARIES}
 )
-
-# ================================
-# ======    BH282 robot   ========
-# ================================
-
-#[[
-add_executable(bh282_robot_test
-  src/bh282_robot_test.cpp
-)
-
-add_dependencies(bh282_robot_test
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(bh282_robot_test
-  armadillo
-  bhand
-  ${catkin_LIBRARIES}
-)
-]]
 
 # ===================================
 # ===================================

@@ -12,6 +12,59 @@ void PRINT_ERR_MSG(const std::string &msg)
   std::cerr << "\033[1m\033[31m" << "[ERROR]: " << msg << "\033[0m\n";
 }
 
+void parseArgs(std::string &robot_descr_name, std::vector<std::string> &base_link,
+  std::vector<std::vector<std::string>> &tool_link, std::vector<double> &ctrl_cycle,
+  std::vector<arma::vec>  &q1, std::vector<arma::vec>  &q2,
+  std::vector<double> &time_duration, std::vector<bool> &use_sim)
+{
+  ros::NodeHandle nh("~");
+  if (!nh.getParam("robot_description_name",robot_descr_name)) throw std::ios_base::failure("Failed to read parameter \"robot_description_name\".");
+
+  int k = 0;
+
+  try{
+    while (true)
+    {
+      std::string bl;
+      std::vector<std::string> tl;
+      double cc;
+      std::vector<double> j1;
+      std::vector<double> j2;
+      double td;
+      bool usim;
+
+      std::ostringstream oss;
+      oss << "_" << k+1;
+      std::string suffix = oss.str();
+
+      if (!nh.getParam("base_link"+suffix,bl)) throw std::ios_base::failure("Failed to read parameter \"base_link" + suffix + "\".");
+      if (!nh.getParam("tool_link"+suffix,tl)) throw std::ios_base::failure("Failed to read parameter \"tool_link" + suffix + "\".");
+      if (!nh.getParam("ctrl_cycle"+suffix,cc)) throw std::ios_base::failure("Failed to read parameter \"ctrl_cycle" + suffix + "\".");
+      if (!nh.getParam("q1"+suffix,j1)) throw std::ios_base::failure("Failed to read parameter \"q1" + suffix + "\".");
+      if (!nh.getParam("q2"+suffix,j2)) throw std::ios_base::failure("Failed to read parameter \"q2" + suffix + "\".");
+      if (!nh.getParam("time_duration"+suffix,td)) throw std::ios_base::failure("Failed to read parameter \"time_duration" + suffix + "\".");
+      if (!nh.getParam("use_sim"+suffix,usim)) throw std::ios_base::failure("Failed to read parameter \"use_sim" + suffix + "\".");
+
+      base_link.push_back(bl);
+      tool_link.push_back(tl);
+      ctrl_cycle.push_back(cc);
+      q1.push_back(j1);
+      q2.push_back(j2);
+      time_duration.push_back(td);
+      use_sim.push_back(usim);
+      k++;
+    }
+  }
+  catch(std::exception &e)
+  {
+    if (k==0)
+    {
+      std::cerr << "[ERROR]: " << e.what() << "\n";
+      exit(-1);
+    }
+  }
+}
+
 void jointsTrajectory(const arma::vec &qT, double total_time, bhand_::RobotHand *robot)
 {
 

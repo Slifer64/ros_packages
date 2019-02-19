@@ -36,6 +36,12 @@ struct ExecArgs
 
 void PRINT_INFO_MSG(const std::string &msg);
 void PRINT_ERR_MSG(const std::string &msg);
+
+void parseArgs(std::string &robot_descr_name, std::vector<std::string> &base_link,
+  std::vector<std::vector<std::string>> &tool_link, std::vector<double> &ctrl_cycle,
+  std::vector<arma::vec>  &q1, std::vector<arma::vec>  &q2,
+  std::vector<double> &time_duration, std::vector<bool> &use_sim);
+
 void jointsTrajectory(const arma::vec &qT, double total_time, bhand_::RobotHand *robot);
 void jointPositionControl(const arma::vec &qT, double total_time, bhand_::RobotHand *robot);
 void jointVelocityControl(const arma::vec &qT, double total_time, bhand_::RobotHand *robot);

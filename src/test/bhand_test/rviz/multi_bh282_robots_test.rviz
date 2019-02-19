@@ -69,126 +69,204 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        lwr1_arm_1_link:
+        bh282_1_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_2_link:
+        bh282_1_finger_11_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_3_link:
+        bh282_1_finger_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_4_link:
+        bh282_1_finger_13_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_5_link:
+        bh282_1_finger_1_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_1_finger_21_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_6_link:
+        bh282_1_finger_22_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_7_link:
+        bh282_1_finger_23_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr1_arm_base_link:
+        bh282_1_finger_2_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_1_finger_31_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_1_link:
+        bh282_1_finger_32_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_2_link:
+        bh282_1_finger_33_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_3_link:
+        bh282_1_finger_3_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_1_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_2_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_4_link:
+        bh282_2_finger_11_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_5_link:
+        bh282_2_finger_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_6_link:
+        bh282_2_finger_13_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_7_link:
+        bh282_2_finger_1_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_2_finger_21_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr2_arm_base_link:
+        bh282_2_finger_22_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_1_link:
+        bh282_2_finger_23_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_2_link:
+        bh282_2_finger_2_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_2_finger_31_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_3_link:
+        bh282_2_finger_32_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_4_link:
+        bh282_2_finger_33_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_5_link:
+        bh282_2_finger_3_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_2_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_3_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_6_link:
+        bh282_3_finger_11_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_7_link:
+        bh282_3_finger_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwr3_arm_base_link:
+        bh282_3_finger_13_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        bh282_3_finger_1_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_3_finger_21_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_22_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_23_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_2_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_3_finger_31_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_32_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_33_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bh282_3_finger_3_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bh282_3_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         world:
           Alpha: 1
           Show Axes: false
@@ -237,22 +315,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.971
+      Distance: 0.926718
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.213618
-        Y: 0.0693266
-        Z: 0.399175
+        X: 0.0620587
+        Y: 0.0156943
+        Z: -0.00134629
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.434796
+      Pitch: 0.734796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.23407
+      Yaw: 3.83907
     Saved: ~
 Window Geometry:
   Displays:

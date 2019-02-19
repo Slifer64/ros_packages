@@ -22,8 +22,5 @@
   <build_depend>misc_lib</build_depend>
   <run_depend>misc_lib</run_depend>
 
-  <build_depend>io_lib</build_depend>
-  <run_depend>io_lib</run_depend>
-
   <export></export>
 </package>

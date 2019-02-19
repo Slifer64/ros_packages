@@ -11,7 +11,6 @@ find_package(catkin REQUIRED
   roslib
   bhand
   misc_lib
-  io_lib
 )
 
 catkin_package(

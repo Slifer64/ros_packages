@@ -12,7 +12,7 @@
 ======  set up 1st robot  ======
 -->
 <joint name="world_to_base1" type="fixed">
-   <origin xyz="0.4 -0.2 0" rpy="0 0 0"/>
+   <origin xyz="0.0 -0.2 0" rpy="0 0 0"/>
    <parent link="world"/>
    <child link="base1"/>
 </joint>
@@ -27,7 +27,7 @@
 ======  set up 2nd robot  ======
 -->
 <joint name="world_to_base2" type="fixed">
-   <origin xyz="-0.4 0.2 0" rpy="0 0 0"/>
+   <origin xyz="-0.2 0.2 0" rpy="0 0 0"/>
    <parent link="world"/>
    <child link="base2"/>
 </joint>
@@ -38,12 +38,11 @@
   <origin xyz="0 0 0" rpy="0 0 0" />
 </xacro:bhand_macro>
 
-
 <!--
 ======  set up 3rd robot  ======
 -->
 <joint name="world_to_base3" type="fixed">
-   <origin xyz="0.3 0.2 0" rpy="0 0 0"/>
+   <origin xyz="0.2 0.15 0" rpy="0 0 0"/>
    <parent link="world"/>
    <child link="base3"/>
 </joint>

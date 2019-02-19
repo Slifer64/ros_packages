@@ -49,7 +49,9 @@ mkdir -p x86/debug/obj && \
 mkdir -p x86/release/obj && \
 
 # Build the library
-make clean all > /dev/null
+make clean all > /dev/null && \
+cd .. && \
+rm -rf .git
 
 if [ $? -eq 0 ]; then
   echo -e $COLOR_GREEN"FRIL library successfully installed!"$COLOR_RESET
