@@ -13,7 +13,7 @@ JointStatePublisher::JointStatePublisher()
 
 JointStatePublisher::~JointStatePublisher()
 {
-  if (run_thread.joinable()) run_thread.join();
+  stop();
 }
 
 void JointStatePublisher::start()
