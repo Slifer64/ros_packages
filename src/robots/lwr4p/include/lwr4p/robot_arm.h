@@ -88,6 +88,9 @@ public:
 
   void addJointState(sensor_msgs::JointState &joint_state_msg);
 
+  arma::vec getLowerJointLimits() const { return arma::vec(joint_pos_lower_lim); }
+  arma::vec getUpperJointLimits() const { return arma::vec(joint_pos_upper_lim); }
+
 protected:
 
   virtual void stop() = 0;

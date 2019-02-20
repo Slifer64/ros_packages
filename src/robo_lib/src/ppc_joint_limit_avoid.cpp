@@ -46,8 +46,9 @@ void PPCJointLimAvoid::init(const arma::vec &qmin, const arma::vec &qmax)
   qmax_ = qmax;
 
   // resize gain vector
-  kq_ = arma::zeros<arma::vec>(Njoints_);
+  kq_.resize(Njoints_);
 
+  gain_ = 1e-4;
   for (int i = 0; i < Njoints_; i++) kq_(i) = gain_;
 
   // initialize variables

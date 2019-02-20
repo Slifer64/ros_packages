@@ -232,7 +232,7 @@ void RobotArm::setGetExternalWrenchFun(arma::vec (*getWrenchFun)(void))
 
 void RobotArm::enable()
 {
-  setMode(lwr4p_::Mode::IDLE);
+  mode = lwr4p_::Mode::IDLE;
   joint_pos = getJointsPosition();
   prev_joint_pos = joint_pos;
   update();

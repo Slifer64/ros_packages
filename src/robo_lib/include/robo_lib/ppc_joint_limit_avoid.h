@@ -26,6 +26,32 @@ public:
   */
   PPCJointLimAvoid(const arma::vec &qmin, const arma::vec &qmax);
 
+  /**
+  * @brief PPCJointLimAvoid::setGain, set one joint gain value
+  * @param joint_index, index of the joint
+  * @param gain, the gain value
+  */
+  void setGain(int joint_index, double gain);
+
+  /**
+  * @brief PPCJointLimAvoid::setGains, set all the joint gain values with the same value
+  * @param gain, the gain value
+  */
+  void setGains(double gain);
+
+  /**
+  * @brief PPCJointLimAvoid::setGains, set all the joint gain values
+  * @param gains, the gain values in vector form
+  */
+  void setGains(const arma::vec &gains);
+
+  /**
+  * @brief PPCJointLimAvoid::getControlSignal
+  * @return the control signal, which is a velocity vector of dimension of N on the joint space
+  * @param q_meas, measure joint position
+  */
+  arma::vec getControlSignal(const arma::vec &q_meas);
+
 
   /**
   * @brief PPCJointLimAvoid::init
@@ -59,32 +85,6 @@ public:
   * @param qmaxs, joint high limits
   */
   void setHighLimits( const arma::vec &qmaxs);
-
-  /**
-  * @brief PPCJointLimAvoid::setGain, set one joint gain value
-  * @param joint_index, index of the joint
-  * @param gain, the gain value
-  */
-  void setGain(int joint_index, double gain);
-
-  /**
-  * @brief PPCJointLimAvoid::setGains, set all the joint gain values with the same value
-  * @param gain, the gain value
-  */
-  void setGains(double gain);
-
-  /**
-  * @brief PPCJointLimAvoid::setGains, set all the joint gain values
-  * @param gains, the gain values in vector form
-  */
-  void setGains(const arma::vec &gains);
-
-  /**
-  * @brief PPCJointLimAvoid::getControlSignal
-  * @return the control signal, which is a velocity vector of dimension of N on the joint space
-  * @param q_meas, measure joint position
-  */
-  arma::vec getControlSignal(const arma::vec &q_meas);
 
 private:
 
