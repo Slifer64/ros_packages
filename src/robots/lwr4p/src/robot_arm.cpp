@@ -101,7 +101,7 @@ void RobotArm::init()
 
   mode = lwr4p_::Mode::IDLE;
 
-  setSingularityThreshold(8e-3);
+  setSingularityThreshold(0.05);
 
   // find base_link and tool_link
   bool found_base_link = false;
