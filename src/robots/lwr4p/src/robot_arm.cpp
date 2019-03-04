@@ -292,6 +292,8 @@ bool RobotArm::setJointsTrajectory(const arma::vec &j_targ, double duration)
   double t = 0.0;
   double Ts = getCtrlCycle();
 
+  int iters = 0;
+
   // start conttroller
   setMode(lwr4p_::Mode::JOINT_POS_CONTROL);
   while (isOk() && getMode()!=lwr4p_::Mode::IDLE && t<duration)

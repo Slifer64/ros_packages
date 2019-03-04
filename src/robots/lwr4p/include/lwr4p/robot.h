@@ -218,7 +218,7 @@ public:
 
   void setJointsTorque(const arma::vec &j_torq)
   {
-    if (getMode() != lwr4p_::Mode::JOINT_VEL_CONTROL)
+    if (getMode() != lwr4p_::Mode::JOINT_TORQUE_CONTROL)
     {
       print_warn_msg("[lwr4+::Robot::setJointsTorque]: Cannot set joints torques. Current mode is \"" + getModeName(getMode()) + "\"\n");
       return;
@@ -238,8 +238,6 @@ public:
     static float temp_pose[12];
     FRI->GetMeasuredCartPose(temp_pose);
     FRI->SetCommandedCartPose(temp_pose);
-
-    // saveLastJointPosition(temp_position);
   }
 
   void setTaskVelocity(const arma::vec &task_vel)
@@ -341,6 +339,24 @@ public:
   // void addJointState(sensor_msgs::JointState &joint_state_msg);
 
 private:
+
+  void setZeroJointTorques()
+  {
+    static float torques[7];
+    for (size_t i = 0; i < 7; i++)
+    {
+      torques[i] = 0;
+    }
+    FRI->SetCommandedJointTorques(torques);
+    // Mirror the joint positions and the cartesian pose in order to avoid
+    // cartesian deviation errors
+    float temp_position[7];
+    FRI->GetMeasuredJointPositions(temp_position);
+    FRI->SetCommandedJointPositions(temp_position);
+    static float temp_pose[12];
+    FRI->GetMeasuredCartPose(temp_pose);
+    FRI->SetCommandedCartPose(temp_pose);
+  }
 
   virtual arma::vec getExternalWrenchImplementation()
   {

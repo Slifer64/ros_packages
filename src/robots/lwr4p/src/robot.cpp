@@ -45,6 +45,9 @@ void Robot::initRobot(const char *path_to_FRI_init)
     jacob_temp[i] = reinterpret_cast<float*>(malloc(sizeof(float) * 7));
   }
 
+  joint_pos = getJointsPositionFromFRI();
+  prev_joint_pos = joint_pos;
+
   setGetExternalWrenchFun(&Robot::getExternalWrenchImplementation, this);
 }
 
@@ -100,7 +103,7 @@ void Robot::update()
     case PROTECTIVE_STOP:
       break;
     case FREEDRIVE:
-      setJointsTorque(arma::vec().zeros(7));
+      setZeroJointTorques();
       break;
     case JOINT_POS_CONTROL:
     case JOINT_VEL_CONTROL:
@@ -291,7 +294,9 @@ void Robot::stop()
 
   arma::vec q_current = getJointsPosition();
   setJointsPositionHelper(q_current);
+
   prev_joint_pos = getJointsPosition();
+
   if (!isOk()) protectiveStop();
 
   // printouts
@@ -313,9 +318,11 @@ void Robot::stop()
     q[i] += qoff[i];
     torques[i] = 0.0;
 
-    joint_pos = q[i];
+    joint_pos(i) = q[i];
   }
   prev_joint_pos = joint_pos;
+
+  std::cout << "stop 22\n";
 
   FRI->SetCommandedJointPositions(q);
 

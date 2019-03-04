@@ -37,13 +37,13 @@
           robot_description_name: "/robot_description"
           base_link: "lwr_arm_base_link"
           tool_link: "lwr_arm_7_link"
-          ctrl_cycle: 0.005
+          ctrl_cycle: 0.002
 
           <!-- j0, j1, j2, j3, j4, j5, j6 -->
           q1: [-0.46, 0.58, 0.28, -1.4, 0, -0.25, 1.27]
           q2: [2.1, 0.92, -0.24, -1.38, 0.03, -1.51, -1.42]
-          time_duration: 4.5 <!-- duration to move from q1 to q2 and vice versa -->
-          use_sim: true
+          time_duration: 5.5 <!-- duration to move from q1 to q2 and vice versa -->
+          use_sim: false
         </rosparam>
 
   </node>
