@@ -148,5 +148,9 @@ CATKIN_IGNORE
 # Kdevelop files
 *.kdev4
 
+#CLion
+src/.idea/
+src/cmake-build-debug/
+
 
 
